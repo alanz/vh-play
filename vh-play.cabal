@@ -1,0 +1,29 @@
+Name:                vh-play
+Version:             0.1
+Synopsis:            Playing with visual editing
+
+-- A longer description of the package.
+-- Description:
+Homepage:            https://github.com/alanz/vh-play
+License:             BSD3
+License-file:        LICENSE
+Author:              Alan Zimmerman
+Maintainer:          alan.zimm@gmail.com
+-- A copyright notice.
+-- Copyright:
+Category:            Graphics
+Build-type:          Simple
+-- Extra-source-files:
+Cabal-version:       >=1.2
+
+
+Executable vh-play
+  Main-is: Main.hs
+  Build-depends: base, haskell98, containers, wx, Blobs
+  Hs-Source-Dirs:  src
+  ghc-options:     -Wall
+
+  -- Modules not exported by this package.
+  -- Other-modules:
+  -- Extra tools (e.g. alex, hsc2hs, ...) needed to build the source.
+  -- Build-tools:
