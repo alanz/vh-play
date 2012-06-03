@@ -1,0 +1,114 @@
+<!DOCTYPE Network-XML  [
+<!ENTITY % Network "((Network))">
+<!ELEMENT Network (EMPTY)>
+<!ELEMENT Network-XML (%Network;)>
+]>
+<Network
+  ><Width
+  >15.0</Width
+  ><Height
+  >9.0</Height
+  ><Info
+    ><unit/></Info
+  ><Palette
+    ><Palette
+      ><string
+      ><![CDATA[circle]]></string
+      ><Circle
+        ><ShapeStyle
+          ><int value="1"
+          /><RGB
+            ><int value="0"
+            /><int value="0"
+            /><int value="0"/></RGB
+          ><RGB
+            ><int value="128"
+            /><int value="200"
+            /><int value="128"/></RGB></ShapeStyle
+        ><double value="0.5"/></Circle
+      ><maybe-DfdNode
+        ><DfdProcess/></maybe-DfdNode
+      ><string
+      ><![CDATA[square]]></string
+      ><Polygon
+        ><ShapeStyle
+          ><int value="2"
+          /><RGB
+            ><int value="0"
+            /><int value="0"
+            /><int value="0"/></RGB
+          ><RGB
+            ><int value="200"
+            /><int value="128"
+            /><int value="200"/></RGB></ShapeStyle
+        ><list-DoublePoint
+          ><X
+          >-0.5</X
+          ><Y
+          >-0.5</Y
+          ><X
+          >0.5</X
+          ><Y
+          >-0.5</Y
+          ><X
+          >0.5</X
+          ><Y
+          >0.5</Y
+          ><X
+          >-0.5</X
+          ><Y
+          >0.5</Y></list-DoublePoint></Polygon
+      ><maybe-DfdNode
+        ><DfdExternal/></maybe-DfdNode></Palette></Palette
+  ><Nodes
+    ><Node id="N1"
+      ><X
+      >3.6777083333333334</X
+      ><Y
+      >4.206875000000001</Y
+      ><Name
+      ><![CDATA[Node 1]]></Name
+      ><LabelAbove
+      >True</LabelAbove
+      ><Shape
+        ><Left-string
+          ><string
+          ><![CDATA[square]]></string></Left-string></Shape
+      ><Info
+        ><DfdExternal/></Info
+      ><Arity
+        ><maybe-tuple2-int-int
+          ><int value="0"
+          /><int value="1"/></maybe-tuple2-int-int></Arity></Node
+    ><Node id="N2"
+      ><X
+      >9.128124999999999</X
+      ><Y
+      >4.4714583333333335</Y
+      ><Name
+      ><![CDATA[Node 2]]></Name
+      ><LabelAbove
+      >True</LabelAbove
+      ><Shape
+        ><Left-string
+          ><string
+          ><![CDATA[circle]]></string></Left-string></Shape
+      ><Info
+        ><DfdProcess/></Info
+      ><Arity
+        ><maybe-tuple2-int-int
+          ><int value="1"
+          /><int value="0"/></maybe-tuple2-int-int></Arity></Node></Nodes
+  ><Edges
+    ><Edge id="E1"
+      ><From
+      >1</From
+      ><To
+      >2</To
+      ><Via
+      /><Info
+        ><unit/></Info
+      ><FromPort
+        ><int value="1"/></FromPort
+      ><ToPort
+        ><int value="1"/></ToPort></Edge></Edges></Network>
