@@ -19,9 +19,9 @@ Cabal-version:       >=1.2
 
 Executable vh-play
   Main-is: Main.hs
-  Build-depends: base, haskell98, containers, wx, Blobs, HaXml, polyparse
+  Build-depends: base, containers, wx, Blobs, HaXml, polyparse
   Hs-Source-Dirs:  src
-  ghc-options:     -Wall
+  ghc-options:     -Wall -fno-warn-unused-do-bind
 
   -- Modules not exported by this package.
   -- Other-modules:

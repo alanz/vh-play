@@ -2,26 +2,18 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Main (main, gain) where
 
-import qualified Graphics.Blobs.NetworkUI as NetworkUI
-import Graphics.UI.WX
-import qualified Graphics.Blobs.State as State
-import Graphics.Blobs.InfoKind
-import Text.Parse
-
-import Text.XML.HaXml.Types
-import qualified Text.XML.HaXml.XmlContent.Haskell as XML
-import List(isPrefixOf)
-
-import Graphics.Blobs.Network
+import Graphics.Blobs.Dfd.Types
 import Graphics.Blobs.Operations
-import qualified Data.IntMap as IntMap
-import List (nub)
-import Maybe (fromJust)
+import Graphics.UI.WX
+import qualified Graphics.Blobs.NetworkUI as NetworkUI
+import qualified Graphics.Blobs.State as State
+
+-- ---------------------------------------------------------------------
 
 -- In this implementation
 -- g = ()
--- n = Int
--- e = [Int]
+-- n = DfdNode
+-- e = [DfdFlow]
 
 main :: IO ()
 main = start $
@@ -33,58 +25,9 @@ main = start $
     }
 
 
-data DfdNode = DfdExternal | DfdProcess | DfdStore deriving (Show,Eq)
-
-instance Parse DfdNode where
-    parse = oneOf
-            [ do { isWord "DfdExternal"
-               ; return DfdExternal
-               }
-            , do { isWord "DfdProcess"
-               ; return DfdProcess
-               }
-            , do { isWord "DfdStore"
-               ; return DfdStore
-               }
-            ]
-
-
-instance InfoKind DfdNode () where
-    blank = DfdProcess
-    check n _ i = []
-
-
-instance XML.HTypeable DfdNode where
-    toHType v = XML.Defined "DfdNode" []
-                    [ XML.Constr "DfdExternal" [] []
-                    , XML.Constr "DfdProcess"  [] []
-                    , XML.Constr "DfdStore"    [] []
-                    ]
-
-instance XML.XmlContent DfdNode where
-    parseContents = do
-        { e@(Elem t _ _) <- XML.element  ["DfdExternal","DfdProcess","DfdStore"]
-        ; case t of
-          _ | "DfdExternal" `isPrefixOf` t -> XML.interior e $
-                do { return (DfdExternal)
-                   }
-            | "DfdProcess" `isPrefixOf` t -> XML.interior e $
-                do { return (DfdProcess)
-                   }
-            | "DfdStore" `isPrefixOf` t -> XML.interior e $
-                do { return (DfdStore)
-                   }
-        }
-    toContents v@(DfdExternal) =
-        [XML.mkElemC (XML.showConstr 0 (XML.toHType v)) []]
-    toContents v@(DfdProcess) =
-        [XML.mkElemC (XML.showConstr 1 (XML.toHType v)) []]
-    toContents v@(DfdStore) =
-        [XML.mkElemC (XML.showConstr 2 (XML.toHType v)) []]
-
 
 -- GraphOps g n e
-graphOps :: GraphOps () DfdNode ()
+graphOps :: GraphOps () DfdNode [DfdFlow]
 graphOps = GraphOps { ioOps = map pureGraphOp
                                   [  ] }
 
