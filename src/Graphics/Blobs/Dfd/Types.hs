@@ -4,8 +4,6 @@
 module Graphics.Blobs.Dfd.Types where
 
 import Data.List(isPrefixOf)
-import Graphics.Blobs.CommonIO
-import Graphics.Blobs.InfoKind
 import Text.Parse
 import Text.XML.HaXml.Types
 import qualified Text.XML.HaXml.XmlContent.Haskell as XML
@@ -32,16 +30,6 @@ instance Parse DfdFlow where
     parse = do { isWord "DfdFlow"
                ; return (DfdFlow [])
                }
-
-instance InfoKind DfdNode () where
-    blank = DfdProcess
-    check _n _ _i = []
-    editDialog = aTextDialog
-
-instance InfoKind [DfdFlow] () where
-    blank = []
-    check _n _ _i = []
-    editDialog = aTextDialog
 
 instance XML.HTypeable DfdNode where
     toHType _v = XML.Defined "DfdNode" []

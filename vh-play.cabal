@@ -19,7 +19,7 @@ Cabal-version:       >=1.2
 
 Executable vh-play
   Main-is: Main.hs
-  Build-depends: base, containers, wx, Blobs, HaXml, polyparse
+  Build-depends: base, wxcore, containers, wx, Blobs, HaXml, polyparse
   Hs-Source-Dirs:  src
   ghc-options:     -Wall -fno-warn-unused-do-bind
 

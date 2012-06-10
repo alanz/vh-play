@@ -2,7 +2,10 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Main (main, gain) where
 
+import Graphics.Blobs.CommonIO
 import Graphics.Blobs.Dfd.Types
+import Graphics.Blobs.Dfd.UI
+import Graphics.Blobs.InfoKind
 import Graphics.Blobs.Operations
 import Graphics.UI.WX
 import qualified Graphics.Blobs.NetworkUI as NetworkUI
@@ -25,6 +28,16 @@ main = start $
     }
 
 
+instance InfoKind DfdNode () where
+    blank = DfdProcess
+    check _n _ _i = []
+    -- editDialog = aTextDialog
+    editDialog = editNodeDialog
+
+instance InfoKind [DfdFlow] () where
+    blank = []
+    check _n _ _i = []
+    editDialog = aTextDialog
 
 -- GraphOps g n e
 graphOps :: GraphOps () DfdNode [DfdFlow]
