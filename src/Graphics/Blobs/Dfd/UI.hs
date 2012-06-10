@@ -1,10 +1,17 @@
 module Graphics.Blobs.Dfd.UI where
 
+import Data.Maybe
 import Graphics.Blobs.CommonIO
 import Graphics.Blobs.Dfd.Types
 import Graphics.Blobs.SafetyNet
 import Graphics.UI.WX
 import Graphics.UI.WXCore
+import Graphics.UI.XTC
+
+instance Labeled DfdNode where
+  toLabel DfdExternal = "External"
+  toLabel DfdProcess  = "Process"
+  toLabel DfdStore    = "Store"
 
 {-
 editDialog :: Window a1 -- ^ Parent frame
@@ -12,6 +19,7 @@ editDialog :: Window a1 -- ^ Parent frame
               -> a      -- ^ Existing value
               -> IO (Maybe a) -- ^ Updated value if changed
 -}
+
 editNodeDialog :: Window a1             -- ^ Parent frame
                   -> String             -- ^ Window title
                   -> DfdNode            -- ^ Existing value
@@ -27,8 +35,8 @@ editNodeDialog parentWindow dialogTitle initial = do
     ; can   <- button d [text := "Cancel", identity := wxID_CANCEL]
     ; buttonSetDefault ok
 
-    ; rb <- radioBox d Vertical ["External", "Process", "Store" ]
-            [ text := "Node Type", selection := selectVal ]
+    ; rb <- (mkRadioView d Vertical [DfdExternal, DfdProcess, DfdStore ]
+            [ text := "Node Type", selection := selectVal ]) :: IO (RadioView DfdNode ())
 
 
     ; set d [layout :=  column 2 [  widget rb
@@ -38,13 +46,12 @@ editNodeDialog parentWindow dialogTitle initial = do
 
     ; showModal d $ \stop1 ->
                 do set ok  [on command := safetyNet parentWindow $
-                                          do sel <- get rb selection
-                                             case sel of
-                                               0 -> stop1 (Just (DfdExternal))
-                                               1 -> stop1 (Just (DfdProcess))
-                                               2 -> stop1 (Just (DfdStore))
+                                          do sel <- get rb typedSelection
+                                             stop1 $ Just sel
                                                ]
                    set can [on command := safetyNet parentWindow $ stop1 Nothing]
     }
+
+-- ---------------------------------------------------------------------
 
 -- EOF
