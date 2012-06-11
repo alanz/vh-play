@@ -21,26 +21,33 @@ import qualified Graphics.Blobs.State as State
 main :: IO ()
 main = start $
   do{ state <- State.empty
-    ; NetworkUI.create state ()		-- global state is just the unit value
-                             undefined	-- dummy node state (for typechecker)
-                             undefined	-- dummy edge state (for typechecker)
-                             graphOps	-- operations available from menu
+    ; NetworkUI.create state emptyGlobal -- global state is a list of possible flows
+                             undefined	 -- dummy node state (for typechecker)
+                             undefined	 -- dummy edge state (for typechecker)
+                             graphOps	 -- operations available from menu
     }
 
 
-instance InfoKind DfdNode () where
+instance InfoKind DfdNode DfdGlobal where
     blank = DfdProcess
     check _n _ _i = []
     -- editDialog = aTextDialog
-    editDialog = editNodeDialog
 
-instance InfoKind [DfdFlow] () where
+instance GuiEdit DfdNode where
+  editDialog = editNodeDialog
+
+instance GuiEdit DfdGlobal where
+  editDialog = aTextDialog
+
+instance InfoKind [DfdFlow] DfdGlobal where
     blank = []
     check _n _ _i = []
-    editDialog = aTextDialog
+
+instance GuiEdit [DfdFlow] where
+  editDialog = aTextDialog
 
 -- GraphOps g n e
-graphOps :: GraphOps () DfdNode [DfdFlow]
+graphOps :: GraphOps DfdGlobal DfdNode [DfdFlow]
 graphOps = GraphOps { ioOps = map pureGraphOp
                                   [  ] }
 

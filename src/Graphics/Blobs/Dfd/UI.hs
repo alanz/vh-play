@@ -54,4 +54,32 @@ editNodeDialog parentWindow dialogTitle initial = do
 
 -- ---------------------------------------------------------------------
 
+editFlowDialog :: Window a1               -- ^ Parent frame
+                  -> String               -- ^ Window title
+                  -> [DfdFlow]            -- ^ Existing value
+                  -> IO (Maybe [DfdFlow]) -- ^ Updated value if changed
+
+editFlowDialog parentWindow dialogTitle initial = do
+  do{ d     <- dialog parentWindow [text := dialogTitle]
+    ; ok    <- button d [text := "Ok"]
+    ; can   <- button d [text := "Cancel", identity := wxID_CANCEL]
+    ; buttonSetDefault ok
+
+    ; rb <- (mkRadioView d Vertical [DfdExternal, DfdProcess, DfdStore ]
+            [ text := "Flow" ]) :: IO (RadioView DfdNode ())
+
+
+    ; set d [layout :=  column 2 [  widget rb
+                                  , floatBottomRight $ row 5 [widget ok, widget can]
+                                  ]
+            ]
+
+    ; showModal d $ \stop1 ->
+                do set ok  [on command := safetyNet parentWindow $
+                                          do sel <- get rb typedSelection
+                                             stop1 $ Just []
+                                               ]
+                   set can [on command := safetyNet parentWindow $ stop1 Nothing]
+    }
+
 -- EOF
