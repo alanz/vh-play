@@ -1,12 +1,12 @@
   Palette
-  [ ("circle"
+  [ ("Process"
     , ( Circle  { shapeStyle = ShapeStyle { styleStrokeWidth = 1
                                         , styleStrokeColour = RGB 0 0 0
                                         , styleFill = RGB 128 200 128
                                         }
               , shapeRadius = 0.5 }
       , Just DfdProcess ))
-  , ("square"
+  , ("External"
     , ( Polygon { shapeStyle = ShapeStyle { styleStrokeWidth = 2
                                         , styleStrokeColour = RGB 0 0 0
                                         , styleFill = RGB 200 128 200
@@ -16,4 +16,22 @@
                                  , DoublePoint 0.5 0.5
                                  , DoublePoint -0.5 0.5 ] }
       , Just DfdExternal ))
+  , ("Store"
+    , ( Composite { shapeSegments =
+                    [ Lines { shapeStyle = ShapeStyle
+                                               { styleStrokeWidth = 2
+                                               , styleStrokeColour = RGB 0 0 0
+                                               , styleFill = RGB 128 128 128
+                                               }
+                            , shapePerimeter = [ DoublePoint -0.6 -0.4
+                                               , DoublePoint  0.6 -0.4 ] }
+                    , Lines { shapeStyle = ShapeStyle
+                                               { styleStrokeWidth = 2
+                                               , styleStrokeColour = RGB 0 0 0
+                                               , styleFill = RGB 128 128 128
+                                               }
+                            , shapePerimeter = [ DoublePoint -0.6 0.4
+                                               , DoublePoint  0.6 0.4 ] }
+                    ] }
+      , Just DfdStore ))
   ]

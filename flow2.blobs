@@ -13,7 +13,7 @@
   ><Palette
     ><Palette
       ><string
-      ><![CDATA[circle]]></string
+      ><![CDATA[Process]]></string
       ><Circle
         ><ShapeStyle
           ><int value="1"
@@ -29,7 +29,7 @@
       ><maybe-DfdNode
         ><DfdProcess/></maybe-DfdNode
       ><string
-      ><![CDATA[square]]></string
+      ><![CDATA[External]]></string
       ><Polygon
         ><ShapeStyle
           ><int value="2"
@@ -59,13 +59,59 @@
           ><Y
           >0.5</Y></list-DoublePoint></Polygon
       ><maybe-DfdNode
-        ><DfdExternal/></maybe-DfdNode></Palette></Palette
+        ><DfdExternal/></maybe-DfdNode
+      ><string
+      ><![CDATA[Store]]></string
+      ><Composite
+        ><list-Shape
+          ><Lines
+            ><ShapeStyle
+              ><int value="2"
+              /><RGB
+                ><int value="0"
+                /><int value="0"
+                /><int value="0"/></RGB
+              ><RGB
+                ><int value="128"
+                /><int value="128"
+                /><int value="128"/></RGB></ShapeStyle
+            ><list-DoublePoint
+              ><X
+              >-0.6</X
+              ><Y
+              >-0.4</Y
+              ><X
+              >0.6</X
+              ><Y
+              >-0.4</Y></list-DoublePoint></Lines
+          ><Lines
+            ><ShapeStyle
+              ><int value="2"
+              /><RGB
+                ><int value="0"
+                /><int value="0"
+                /><int value="0"/></RGB
+              ><RGB
+                ><int value="128"
+                /><int value="128"
+                /><int value="128"/></RGB></ShapeStyle
+            ><list-DoublePoint
+              ><X
+              >-0.6</X
+              ><Y
+              >0.4</Y
+              ><X
+              >0.6</X
+              ><Y
+              >0.4</Y></list-DoublePoint></Lines></list-Shape></Composite
+      ><maybe-DfdNode
+        ><DfdStore/></maybe-DfdNode></Palette></Palette
   ><Nodes
     ><Node id="N1"
       ><X
-      >10.371666666666666</X
+      >10.530416666666666</X
       ><Y
-      >4.921250000000001</Y
+      >4.788958333333334</Y
       ><Name
       ><![CDATA[Node 1]]></Name
       ><LabelAbove
@@ -73,18 +119,18 @@
       ><Shape
         ><Left-string
           ><string
-          ><![CDATA[circle]]></string></Left-string></Shape
+          ><![CDATA[Process]]></string></Left-string></Shape
       ><Info
         ><DfdProcess/></Info
       ><Arity
         ><maybe-tuple2-int-int
-          ><int value="1"
+          ><int value="2"
           /><int value="0"/></maybe-tuple2-int-int></Arity></Node
     ><Node id="N2"
       ><X
-      >3.2808333333333333</X
+      >3.1485416666666666</X
       ><Y
-      >4.497916666666667</Y
+      >3.8100000000000005</Y
       ><Name
       ><![CDATA[Node 2]]></Name
       ><LabelAbove
@@ -92,12 +138,31 @@
       ><Shape
         ><Left-string
           ><string
-          ><![CDATA[square]]></string></Left-string></Shape
+          ><![CDATA[External]]></string></Left-string></Shape
       ><Info
         ><DfdExternal/></Info
       ><Arity
         ><maybe-tuple2-int-int
           ><int value="0"
+          /><int value="2"/></maybe-tuple2-int-int></Arity></Node
+    ><Node id="N3"
+      ><X
+      >6.402916666666667</X
+      ><Y
+      >6.323541666666666</Y
+      ><Name
+      ><![CDATA[Node 3]]></Name
+      ><LabelAbove
+      >True</LabelAbove
+      ><Shape
+        ><Left-string
+          ><string
+          ><![CDATA[Store]]></string></Left-string></Shape
+      ><Info
+        ><DfdStore/></Info
+      ><Arity
+        ><maybe-tuple2-int-int
+          ><int value="1"
           /><int value="1"/></maybe-tuple2-int-int></Arity></Node></Nodes
   ><Edges
     ><Edge id="E1"
@@ -106,9 +171,37 @@
       ><To
       >1</To
       ><Via
+        ><X
+        >6.852708333333333</X
+        ><Y
+        >4.1275</Y></Via
+      ><Info
+        ><list-DfdFlow/></Info
+      ><FromPort
+        ><int value="1"/></FromPort
+      ><ToPort
+        ><int value="1"/></ToPort></Edge
+    ><Edge id="E2"
+      ><From
+      >2</From
+      ><To
+      >3</To
+      ><Via
+      /><Info
+        ><list-DfdFlow/></Info
+      ><FromPort
+        ><int value="2"/></FromPort
+      ><ToPort
+        ><int value="1"/></ToPort></Edge
+    ><Edge id="E3"
+      ><From
+      >3</From
+      ><To
+      >1</To
+      ><Via
       /><Info
         ><list-DfdFlow/></Info
       ><FromPort
         ><int value="1"/></FromPort
       ><ToPort
-        ><int value="1"/></ToPort></Edge></Edges></Network>
+        ><int value="2"/></ToPort></Edge></Edges></Network>
