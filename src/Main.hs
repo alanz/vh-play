@@ -37,7 +37,7 @@ instance GuiEdit DfdNode where
   editDialog = editNodeDialog
 
 instance GuiEdit DfdGlobal where
-  editDialog = aTextDialog
+  editDialog = editGlobalDialog
 
 instance InfoKind [DfdFlow] DfdGlobal where
     blank = []
@@ -45,6 +45,13 @@ instance InfoKind [DfdFlow] DfdGlobal where
 
 instance GuiEdit [DfdFlow] where
   editDialog = aTextDialog
+
+instance Descriptor DfdNode where
+  descriptor _ = "DfdNode"
+
+instance Descriptor [DfdFlow] where
+  descriptor _ = "[DfdFlow]"
+
 
 -- GraphOps g n e
 graphOps :: GraphOps DfdGlobal DfdNode [DfdFlow]
