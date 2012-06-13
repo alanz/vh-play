@@ -44,7 +44,8 @@ instance InfoKind [DfdFlow] DfdGlobal where
     check _n _ _i = []
 
 instance GuiEdit [DfdFlow] where
-  editDialog = aTextDialog
+  -- editDialog = aTextDialog
+  editDialog = editFlowDialog
 
 instance Descriptor DfdNode where
   descriptor _ = "DfdNode"

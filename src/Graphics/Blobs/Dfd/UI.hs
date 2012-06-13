@@ -13,6 +13,9 @@ instance Labeled DfdNode where
   toLabel DfdProcess  = "Process"
   toLabel DfdStore    = "Store"
 
+instance Labeled DfdFlow where
+  toLabel (DfdFlow x) = x
+
 {-
 editDialog :: Window a1 -- ^ Parent frame
               -> String -- ^ Window title
@@ -65,19 +68,17 @@ editFlowDialog parentWindow dialogTitle initial = do
     ; can   <- button d [text := "Cancel", identity := wxID_CANCEL]
     ; buttonSetDefault ok
 
-    ; rb <- (mkRadioView d Vertical [DfdExternal, DfdProcess, DfdStore ]
-            [ text := "Flow" ]) :: IO (RadioView DfdNode ())
+    ; mv <- mkMultiListView d [typedItems := [DfdFlow "foo",DfdFlow "bar",DfdFlow "baz"]]
 
-
-    ; set d [layout :=  column 2 [  widget rb
+    ; set d [layout :=  column 2 [  widget mv
                                   , floatBottomRight $ row 5 [widget ok, widget can]
                                   ]
             ]
 
     ; showModal d $ \stop1 ->
                 do set ok  [on command := safetyNet parentWindow $
-                                          do sel <- get rb typedSelection
-                                             stop1 $ Just []
+                                          do sel <- get mv typedSelections
+                                             stop1 $ Just sel
                                                ]
                    set can [on command := safetyNet parentWindow $ stop1 Nothing]
     }

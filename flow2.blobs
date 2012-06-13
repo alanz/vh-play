@@ -113,9 +113,9 @@
   ><Nodes
     ><Node id="N1"
       ><X
-      >8.678333333333335</X
+      >9.604375000000001</X
       ><Y
-      >5.3975</Y
+      >3.545416666666667</Y
       ><Name
       ><![CDATA[Node 1]]></Name
       ><LabelAbove
@@ -132,9 +132,9 @@
           /><int value="0"/></maybe-tuple2-int-int></Arity></Node
     ><Node id="N2"
       ><X
-      >3.7041666666666666</X
+      >2.0637499999999998</X
       ><Y
-      >4.497916666666667</Y
+      >4.4714583333333335</Y
       ><Name
       ><![CDATA[Node 2]]></Name
       ><LabelAbove
@@ -160,7 +160,10 @@
         ><list-DfdFlow
           ><DfdFlow
             ><string
-            ><![CDATA[bar]]></string></DfdFlow></list-DfdFlow></Info
+            ><![CDATA[bar]]></string></DfdFlow
+          ><DfdFlow
+            ><string
+            ><![CDATA[foo]]></string></DfdFlow></list-DfdFlow></Info
       ><FromPort
         ><int value="1"/></FromPort
       ><ToPort
