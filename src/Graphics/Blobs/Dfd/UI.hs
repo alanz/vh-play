@@ -96,21 +96,40 @@ editGlobalDialog parentWindow dialogTitle initial = do
     ; can   <- button d [text := "Cancel", identity := wxID_CANCEL]
     ; buttonSetDefault ok
 
-    ; rb <- (mkRadioView d Vertical [DfdExternal, DfdProcess, DfdStore ]
-            [ text := "Flow" ]) :: IO (RadioView DfdNode ())
+    ; mv <- mkMultiListView d [typedItems := [DfdFlow "foo",DfdFlow "bar",DfdFlow "baz"]]
 
+    ; let foo = "" :: String
+    ; ve <- mkValueEntry d [ typedValue := (Just foo) ]
+    ; new   <- button d [text := "New"
+                        , on command := do
+                                          cur <- get mv typedItems
+                                          mVal <- get ve typedValue
+                                          case mVal of
+                                            Just v ->
+                                              set mv [ typedItems := (cur ++ [(DfdFlow v)])]
+                                            Nothing -> return ()
+                        ]
 
-    ; set d [layout :=  column 2 [  widget rb
-                                  , floatBottomRight $ row 5 [widget ok, widget can]
-                                  ]
+    ; set d [layout :=  column 2 [  widget mv
+                                 , widget ve
+                                 , floatBottomRight $ row 5 [widget new, widget ok, widget can]
+                                 ]
             ]
+
 
     ; showModal d $ \stop1 ->
                 do set ok  [on command := safetyNet parentWindow $
-                                          do sel <- get rb typedSelection
-                                             stop1 $ Just emptyGlobal
+                                          do sel <- get mv typedSelections
+                                             stop1 $ Just (initial { flows = sel })
                                                ]
+                   -- set new [on command := safetyNet parentWindow $
+                   --                        do sel <- get mv typedSelections
+                   --                           n   <- get vi typedSelection
+                   --                           stop1 $ Just (initial { flows = sel })
+                   --                             ]
+
                    set can [on command := safetyNet parentWindow $ stop1 Nothing]
+
     }
 
 -- EOF
