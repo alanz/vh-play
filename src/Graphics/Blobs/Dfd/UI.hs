@@ -1,6 +1,7 @@
 module Graphics.Blobs.Dfd.UI where
 
 import Data.Maybe
+import Data.List
 import Graphics.Blobs.CommonIO
 import Graphics.Blobs.Dfd.Types
 import Graphics.Blobs.SafetyNet
@@ -91,12 +92,12 @@ editGlobalDialog :: Window a1               -- ^ Parent frame
                   -> IO (Maybe DfdGlobal) -- ^ Updated value if changed
 
 editGlobalDialog parentWindow dialogTitle initial = do
-  do{ d     <- dialog parentWindow [text := dialogTitle]
+  do{ d     <- dialog parentWindow [text := dialogTitle ]
     ; ok    <- button d [text := "Ok"]
     ; can   <- button d [text := "Cancel", identity := wxID_CANCEL]
     ; buttonSetDefault ok
 
-    ; mv <- mkMultiListView d [typedItems := [DfdFlow "foo",DfdFlow "bar",DfdFlow "baz"]]
+    ; mv <- mkMultiListView d [typedItems := sort $ nub [DfdFlow "foo",DfdFlow "bar",DfdFlow "baz"]]
 
     ; let foo = "" :: String
     ; ve <- mkValueEntry d [ typedValue := (Just foo) ]
@@ -106,13 +107,13 @@ editGlobalDialog parentWindow dialogTitle initial = do
                                           mVal <- get ve typedValue
                                           case mVal of
                                             Just v ->
-                                              set mv [ typedItems := (cur ++ [(DfdFlow v)])]
+                                              set mv [ typedItems := sort $ nub (cur ++ [(DfdFlow v)])]
                                             Nothing -> return ()
                         ]
 
     ; set d [layout :=  column 2 [  widget mv
-                                 , widget ve
-                                 , floatBottomRight $ row 5 [widget new, widget ok, widget can]
+                                 , row 5 [widget ve, widget new]
+                                 , floatBottomRight $ row 5 [widget ok, widget can]
                                  ]
             ]
 

@@ -7,13 +7,13 @@ import Data.List(isPrefixOf)
 import Graphics.Blobs.InfoKind
 import Text.Parse
 import Text.XML.HaXml.Types
--- import qualified Text.XML.HaXml.XmlContent.Haskell as XML
 import Text.XML.HaXml.XmlContent.Haskell
+import qualified Data.Set as Set
 
 -- ---------------------------------------------------------------------
 
 data DfdNode = DfdExternal | DfdProcess | DfdStore deriving (Show,Eq)
-data DfdFlow = DfdFlow String deriving (Show,Eq)
+data DfdFlow = DfdFlow String deriving (Show,Eq,Ord)
 data DfdGlobal = DfdGlobal { flows :: [DfdFlow] } deriving (Show,Eq)
 
 
