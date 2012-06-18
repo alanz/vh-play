@@ -8,7 +8,6 @@ import Graphics.Blobs.InfoKind
 import Text.Parse
 import Text.XML.HaXml.Types
 import Text.XML.HaXml.XmlContent.Haskell
-import qualified Data.Set as Set
 
 -- ---------------------------------------------------------------------
 
@@ -21,7 +20,7 @@ emptyGlobal :: DfdGlobal
 emptyGlobal = DfdGlobal { flows = [] }
 
 instance Descriptor DfdGlobal where
-  descriptor a = "DfdGlobal:"
+  descriptor _a = "DfdGlobal:"
 
 -- Run DrIFT-cabalized on this file to generate results
 

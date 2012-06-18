@@ -1,8 +1,6 @@
 module Graphics.Blobs.Dfd.UI where
 
-import Data.Maybe
 import Data.List
-import Graphics.Blobs.CommonIO
 import Graphics.Blobs.Dfd.Types
 import Graphics.Blobs.SafetyNet
 import Graphics.UI.WX
@@ -25,8 +23,7 @@ editNodeDialog :: Window a1             -- ^ Parent frame
                   -> DfdNode            -- ^ Existing value
                   -> DfdGlobal          -- ^ Global state
                   -> IO (Maybe DfdNode) -- ^ Updated value if changed
-
-editNodeDialog parentWindow dialogTitle initial global = do
+editNodeDialog parentWindow dialogTitle initial _global = do
   do{ let selectVal = case initial of
             DfdExternal -> 0
             DfdProcess -> 1
@@ -78,7 +75,7 @@ editFlowDialog parentWindow dialogTitle initial global = do
                                          set mvc [ typedItems := newcval ]
                                          set mvg [ typedItems := newgval ]
                       ]
-    ; rem <- button d [text := ">>"
+    ; remove <- button d [text := ">>"
                        , on command := do
                                          gval <- get mvg typedItems
                                          cval <- get mvc typedSelections
@@ -89,7 +86,9 @@ editFlowDialog parentWindow dialogTitle initial global = do
                                          set mvg [ typedItems := newgval ]
                       ]
 
-    ; set d [layout :=  column 2 [  row 5 [widget mvc, column 5 [widget add, widget rem], widget mvg]
+    ; set d [layout :=  column 2 [  row 5 [minsize (sz 100 100) $ widget mvc,
+                                           column 5 [widget add, widget remove],
+                                           minsize (sz 100 100) $ widget mvg]
                                  , floatBottomRight $ row 5 [widget ok, widget can]
                                  ]
             ]
