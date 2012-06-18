@@ -17,19 +17,16 @@ instance Labeled DfdNode where
 instance Labeled DfdFlow where
   toLabel (DfdFlow x) = x
 
-{-
-editDialog :: Window a1 -- ^ Parent frame
-              -> String -- ^ Window title
-              -> a      -- ^ Existing value
-              -> IO (Maybe a) -- ^ Updated value if changed
--}
+
+-- ---------------------------------------------------------------------
 
 editNodeDialog :: Window a1             -- ^ Parent frame
                   -> String             -- ^ Window title
                   -> DfdNode            -- ^ Existing value
+                  -> DfdGlobal          -- ^ Global state
                   -> IO (Maybe DfdNode) -- ^ Updated value if changed
 
-editNodeDialog parentWindow dialogTitle initial = do
+editNodeDialog parentWindow dialogTitle initial global = do
   do{ let selectVal = case initial of
             DfdExternal -> 0
             DfdProcess -> 1
@@ -61,25 +58,46 @@ editNodeDialog parentWindow dialogTitle initial = do
 editFlowDialog :: Window a1               -- ^ Parent frame
                   -> String               -- ^ Window title
                   -> [DfdFlow]            -- ^ Existing value
+                  -> DfdGlobal            -- ^ Global value
                   -> IO (Maybe [DfdFlow]) -- ^ Updated value if changed
 
-editFlowDialog parentWindow dialogTitle initial = do
+editFlowDialog parentWindow dialogTitle initial global = do
   do{ d     <- dialog parentWindow [text := dialogTitle]
     ; ok    <- button d [text := "Ok"]
     ; can   <- button d [text := "Cancel", identity := wxID_CANCEL]
     ; buttonSetDefault ok
 
-    ; mv <- mkMultiListView d [typedItems := [DfdFlow "foo",DfdFlow "bar",DfdFlow "baz"]]
+    ; mvc <- mkMultiListView d [typedItems := initial]
+    ; mvg <- mkMultiListView d [typedItems := (flows global) \\ initial]
+    ; add <- button d [text := "<<"
+                       , on command := do
+                                         gval <- get mvg typedSelections
+                                         cval <- get mvc typedItems
+                                         let newcval = sort $ nub (gval ++ cval)
+                                             newgval = (flows global) \\ newcval
+                                         set mvc [ typedItems := newcval ]
+                                         set mvg [ typedItems := newgval ]
+                      ]
+    ; rem <- button d [text := ">>"
+                       , on command := do
+                                         gval <- get mvg typedItems
+                                         cval <- get mvc typedSelections
+                                         cvalall <- get mvc typedItems
+                                         let newcval = cvalall \\ cval
+                                             newgval = (flows global) \\ newcval
+                                         set mvc [ typedItems := newcval ]
+                                         set mvg [ typedItems := newgval ]
+                      ]
 
-    ; set d [layout :=  column 2 [  widget mv
-                                  , floatBottomRight $ row 5 [widget ok, widget can]
-                                  ]
+    ; set d [layout :=  column 2 [  row 5 [widget mvc, column 5 [widget add, widget rem], widget mvg]
+                                 , floatBottomRight $ row 5 [widget ok, widget can]
+                                 ]
             ]
 
     ; showModal d $ \stop1 ->
                 do set ok  [on command := safetyNet parentWindow $
-                                          do sel <- get mv typedSelections
-                                             stop1 $ Just sel
+                                          do items <- get mvc typedItems
+                                             stop1 $ Just items
                                                ]
                    set can [on command := safetyNet parentWindow $ stop1 Nothing]
     }
@@ -103,7 +121,7 @@ editGlobalDialog parentWindow dialogTitle initial = do
     ; ve <- mkValueEntry d [ typedValue := (Just foo) ]
     ; new   <- button d [text := "New"
                         , on command := do
-                                          cur <- get mv typedItems
+                                          cur  <- get mv typedItems
                                           mVal <- get ve typedValue
                                           case mVal of
                                             Just v ->
@@ -120,8 +138,8 @@ editGlobalDialog parentWindow dialogTitle initial = do
 
     ; showModal d $ \stop1 ->
                 do set ok  [on command := safetyNet parentWindow $
-                                          do sel <- get mv typedSelections
-                                             stop1 $ Just (initial { flows = sel })
+                                          do items <- get mv typedItems
+                                             stop1 $ Just (initial { flows = items })
                                                ]
                    -- set new [on command := safetyNet parentWindow $
                    --                        do sel <- get mv typedSelections

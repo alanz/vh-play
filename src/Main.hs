@@ -31,10 +31,13 @@ main = start $
 instance InfoKind DfdNode DfdGlobal where
     blank = DfdProcess
     check _n _ _i = []
-    -- editDialog = aTextDialog
 
 instance GuiEdit DfdNode where
-  editDialog = editNodeDialog
+  editDialog = undefined
+
+instance GuiGlobalEdit DfdNode DfdGlobal where
+  editDialogWithGlobal parentWindow dialogTitle initial global = editNodeDialog parentWindow dialogTitle initial global
+
 
 instance GuiEdit DfdGlobal where
   editDialog = editGlobalDialog
@@ -44,8 +47,12 @@ instance InfoKind [DfdFlow] DfdGlobal where
     check _n _ _i = []
 
 instance GuiEdit [DfdFlow] where
-  -- editDialog = aTextDialog
-  editDialog = editFlowDialog
+  editDialog = undefined
+
+instance GuiGlobalEdit [DfdFlow] DfdGlobal where
+  editDialogWithGlobal parentWindow dialogTitle initial global = editFlowDialog parentWindow dialogTitle initial global
+
+
 
 instance Descriptor DfdNode where
   descriptor _ = "DfdNode"

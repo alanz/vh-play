@@ -13,7 +13,16 @@
       ><list-DfdFlow
         ><DfdFlow
           ><string
-          ><![CDATA[foo]]></string></DfdFlow></list-DfdFlow></DfdGlobal></Info
+          ><![CDATA[bar]]></string></DfdFlow
+        ><DfdFlow
+          ><string
+          ><![CDATA[baz]]></string></DfdFlow
+        ><DfdFlow
+          ><string
+          ><![CDATA[foo]]></string></DfdFlow
+        ><DfdFlow
+          ><string
+          ><![CDATA[goo]]></string></DfdFlow></list-DfdFlow></DfdGlobal></Info
   ><Palette
     ><Palette
       ><string
@@ -163,7 +172,10 @@
             ><![CDATA[bar]]></string></DfdFlow
           ><DfdFlow
             ><string
-            ><![CDATA[foo]]></string></DfdFlow></list-DfdFlow></Info
+            ><![CDATA[foo]]></string></DfdFlow
+          ><DfdFlow
+            ><string
+            ><![CDATA[goo]]></string></DfdFlow></list-DfdFlow></Info
       ><FromPort
         ><int value="1"/></FromPort
       ><ToPort
