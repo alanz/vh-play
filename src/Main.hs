@@ -7,6 +7,7 @@ import Graphics.Blobs.Dfd.Types
 import Graphics.Blobs.Dfd.UI
 import Graphics.Blobs.InfoKind
 import Graphics.Blobs.Operations
+import Graphics.Blobs.NetworkFile
 import Graphics.UI.WX
 import qualified Graphics.Blobs.NetworkUI as NetworkUI
 import qualified Graphics.Blobs.State as State
@@ -32,9 +33,6 @@ instance InfoKind DfdNode DfdGlobal where
     blank = DfdProcess
     check _n _ _i = []
 
-instance GuiEdit DfdNode where
-  editDialog = undefined
-
 instance GuiGlobalEdit DfdNode DfdGlobal where
   editDialogWithGlobal parentWindow dialogTitle initial global = editNodeDialog parentWindow dialogTitle initial global
 
@@ -46,20 +44,19 @@ instance InfoKind [DfdFlow] DfdGlobal where
     blank = []
     check _n _ _i = []
 
-instance GuiEdit [DfdFlow] where
-  editDialog = undefined
-
 instance GuiGlobalEdit [DfdFlow] DfdGlobal where
   editDialogWithGlobal parentWindow dialogTitle initial global = editFlowDialog parentWindow dialogTitle initial global
 
-
+instance Descriptor DfdGlobal where
+  descriptor g = "flows:"  ++ descriptor (flows g)
 
 instance Descriptor DfdNode where
-  descriptor _ = "DfdNode"
+  descriptor DfdExternal = "External"
+  descriptor DfdProcess  = "Process"
+  descriptor DfdStore    = "Store"
 
 instance Descriptor [DfdFlow] where
-  descriptor _ = "[DfdFlow]"
-
+  descriptor xs = show $ map (\(DfdFlow s) -> s) xs
 
 -- GraphOps g n e
 graphOps :: GraphOps DfdGlobal DfdNode [DfdFlow]
@@ -106,3 +103,11 @@ accumulateIn :: IntMap.IntMap (Edge [Int]) -> NodeNr -> Node [Int] -> Node [Int]
 
 gain :: IO ()
 gain = main -- :-)
+
+{-
+foo = do
+  fc <- readFile "./f.blobs"
+  case fromStringAssocs fc of
+    Left str -> return str
+    Right (assocs, errs, b) -> return $ "Right " ++ (show assocs) ++ "," ++ (show errs) ++ "," ++ (show b)
+-}
