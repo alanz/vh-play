@@ -2,14 +2,18 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Main (main, gain) where
 
+import Graphics.Blobs.Colors
 import Graphics.Blobs.CommonIO
 import Graphics.Blobs.Dfd.Types
 import Graphics.Blobs.Dfd.UI
 import Graphics.Blobs.InfoKind
-import Graphics.Blobs.Operations
+import Graphics.Blobs.Math
 import Graphics.Blobs.NetworkFile
+import Graphics.Blobs.Operations
+import Graphics.Blobs.Shape
 import Graphics.UI.WX
 import qualified Graphics.Blobs.NetworkUI as NetworkUI
+import qualified Graphics.Blobs.Palette as P
 import qualified Graphics.Blobs.State as State
 
 -- ---------------------------------------------------------------------
@@ -25,6 +29,7 @@ main = start $
     ; NetworkUI.create state emptyGlobal -- global state is a list of possible flows
                              undefined	 -- dummy node state (for typechecker)
                              undefined	 -- dummy edge state (for typechecker)
+                             palette     -- default palette
                              graphOps	 -- operations available from menu
     }
 
@@ -104,10 +109,43 @@ accumulateIn :: IntMap.IntMap (Edge [Int]) -> NodeNr -> Node [Int] -> Node [Int]
 gain :: IO ()
 gain = main -- :-)
 
-{-
-foo = do
-  fc <- readFile "./f.blobs"
-  case fromStringAssocs fc of
-    Left str -> return str
-    Right (assocs, errs, b) -> return $ "Right " ++ (show assocs) ++ "," ++ (show errs) ++ "," ++ (show b)
--}
+-- ---------------------------------------------------------------------
+
+palette :: P.Palette DfdNode
+palette =   P.Palette
+  [ ("Process"
+    , ( Circle  { shapeStyle = ShapeStyle { styleStrokeWidth = 1
+                                        , styleStrokeColour = RGB 0 0 0
+                                        , styleFill = RGB 128 200 128
+                                        }
+              , shapeRadius = 0.5 }
+      , Just DfdProcess ))
+  , ("External"
+    , ( Polygon { shapeStyle = ShapeStyle { styleStrokeWidth = 2
+                                        , styleStrokeColour = RGB 0 0 0
+                                        , styleFill = RGB 200 128 200
+                                        }
+              , shapePerimeter = [ DoublePoint (-0.5) (-0.5)
+                                 , DoublePoint 0.5 (-0.5)
+                                 , DoublePoint 0.5 0.5
+                                 , DoublePoint (-0.5) 0.5 ] }
+      , Just DfdExternal ))
+  , ("Store"
+    , ( Composite { shapeSegments =
+                    [ Lines { shapeStyle = ShapeStyle
+                                               { styleStrokeWidth = 2
+                                               , styleStrokeColour = RGB 0 0 0
+                                               , styleFill = RGB 128 128 128
+                                               }
+                            , shapePerimeter = [ DoublePoint (-0.6) (-0.4)
+                                               , DoublePoint  0.6 (-0.4) ] }
+                    , Lines { shapeStyle = ShapeStyle
+                                               { styleStrokeWidth = 2
+                                               , styleStrokeColour = RGB 0 0 0
+                                               , styleFill = RGB 128 128 128
+                                               }
+                            , shapePerimeter = [ DoublePoint (-0.6) 0.4
+                                               , DoublePoint  0.6 0.4 ] }
+                    ] }
+      , Just DfdStore ))
+  ]

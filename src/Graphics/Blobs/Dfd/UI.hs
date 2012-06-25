@@ -95,8 +95,8 @@ editFlowDialog parentWindow dialogTitle initial global = do
 
     ; showModal d $ \stop1 ->
                 do set ok  [on command := safetyNet parentWindow $
-                                          do items <- get mvc typedItems
-                                             stop1 $ Just items
+                                          do xs <- get mvc typedItems
+                                             stop1 $ Just xs
                                                ]
                    set can [on command := safetyNet parentWindow $ stop1 Nothing]
     }
@@ -137,8 +137,8 @@ editGlobalDialog parentWindow dialogTitle initial = do
 
     ; showModal d $ \stop1 ->
                 do set ok  [on command := safetyNet parentWindow $
-                                          do items <- get mv typedItems
-                                             stop1 $ Just (initial { flows = items })
+                                          do xs <- get mv typedItems
+                                             stop1 $ Just (initial { flows = xs })
                                                ]
                    -- set new [on command := safetyNet parentWindow $
                    --                        do sel <- get mv typedSelections

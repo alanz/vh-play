@@ -22,13 +22,22 @@ deriveJSON id ''DfdFlow
 deriveJSON id ''DfdGlobal
 
 instance Parse DfdNode where
-    parse = undefined
+    parse = do { isWord "DfdNode"
+               ; return DfdExternal
+               }
+
 
 instance Parse DfdFlow where
-    parse = undefined
+    parse = do { isWord "DfdFlow"
+               ; return DfdFlow `apply` parse
+               }
+
 
 instance Parse DfdGlobal where
-    parse = undefined
+    parse = do { isWord "DfdGlobal"
+               ; return DfdGlobal {flows=[]}
+               }
+
 
 emptyGlobal :: DfdGlobal
 emptyGlobal = DfdGlobal { flows = [] }
