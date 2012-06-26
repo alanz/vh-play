@@ -11,6 +11,8 @@ instance Labeled DfdNode where
   toLabel DfdExternal = "External"
   toLabel DfdProcess  = "Process"
   toLabel DfdStore    = "Store"
+  toLabel DfdPortIn   = "In"
+  toLabel DfdPortOut  = "Out"
 
 instance Labeled DfdFlow where
   toLabel (DfdFlow x) = x
@@ -26,16 +28,17 @@ editNodeDialog :: Window a1             -- ^ Parent frame
 editNodeDialog parentWindow dialogTitle initial _global = do
   do{ let selectVal = case initial of
             DfdExternal -> 0
-            DfdProcess -> 1
-            DfdStore -> 2
+            DfdProcess  -> 1
+            DfdStore    -> 2
+            DfdPortIn   -> 3
+            DfdPortOut  -> 4
     ; d <- dialog parentWindow [text := dialogTitle]
     ; ok    <- button d [text := "Ok"]
     ; can   <- button d [text := "Cancel", identity := wxID_CANCEL]
     ; buttonSetDefault ok
 
-    ; rb <- (mkRadioView d Vertical [DfdExternal, DfdProcess, DfdStore ]
+    ; rb <- (mkRadioView d Vertical [DfdExternal, DfdProcess, DfdStore, DfdPortIn, DfdPortOut ]
             [ text := "Node Type", selection := selectVal ]) :: IO (RadioView DfdNode ())
-
 
     ; set d [layout :=  column 2 [  widget rb
                                   , floatBottomRight $ row 5 [widget ok, widget can]

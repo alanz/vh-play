@@ -11,7 +11,7 @@ import Data.Aeson.TH
 
 -- ---------------------------------------------------------------------
 
-data DfdNode = DfdExternal | DfdProcess | DfdStore deriving (Show,Eq,Data,Typeable)
+data DfdNode = DfdExternal | DfdProcess | DfdStore | DfdPortIn | DfdPortOut deriving (Show,Eq,Data,Typeable)
 
 data DfdFlow = DfdFlow String deriving (Show,Eq,Ord,Data,Typeable)
 

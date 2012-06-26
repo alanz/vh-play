@@ -59,6 +59,8 @@ instance Descriptor DfdNode where
   descriptor DfdExternal = "External"
   descriptor DfdProcess  = "Process"
   descriptor DfdStore    = "Store"
+  descriptor DfdPortIn   = "In"
+  descriptor DfdPortOut  = "Out"
 
 instance Descriptor [DfdFlow] where
   descriptor xs = show $ map (\(DfdFlow s) -> s) xs
@@ -68,16 +70,8 @@ graphOps :: GraphOps DfdGlobal DfdNode [DfdFlow]
 graphOps = GraphOps { ioOps = map pureGraphOp
                                   [  ] }
 
-{-
--- Some basic kinds of info to store in the nodes/edges
-instance InfoKind Int () where
-    blank = 0
-    check n _ i | i<0 = ["Number should not be negative in "++n]
-                | otherwise = []
-instance InfoKind [Int] () where
-    blank = []
-    check _ _ _ = []
 
+{-
 -- A simple range of operations on a graph network.
 graphOps :: GraphOps () [Int] [Int]
 graphOps = GraphOps { ioOps = map pureGraphOp
@@ -148,4 +142,24 @@ palette =   P.Palette
                                                , DoublePoint  0.6 0.4 ] }
                     ] }
       , Just DfdStore ))
+  , ("In"
+    , ( Polygon { shapeStyle = ShapeStyle { styleStrokeWidth = 1
+                                        , styleStrokeColour = RGB 0 0 0
+                                        , styleFill = RGB 128 200 200
+                                        }
+                , shapePerimeter = [ DoublePoint (-0.2) (-0.2)
+                                   , DoublePoint (-0.2) ( 0.2)
+                                   , DoublePoint ( 0.2) ( 0.0) ] }
+      , Just DfdPortIn ))
+
+  , ("Out"
+    , ( Polygon { shapeStyle = ShapeStyle { styleStrokeWidth = 1
+                                          , styleStrokeColour = RGB 0 0 0
+                                          , styleFill = RGB 128 200 200
+                                        }
+                , shapePerimeter = [ DoublePoint (-0.2) ( 0.0)
+                                   , DoublePoint ( 0.2) (-0.2)
+                                   , DoublePoint ( 0.2) ( 0.2) ] }
+      , Just DfdPortOut ))
   ]
+
