@@ -3,3 +3,5 @@
 -- :set -hide-package monads-fd
 :set -i./src/
 -- :set -i./dist/build
+-- :set -v
+:set -package ghc
