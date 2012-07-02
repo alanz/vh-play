@@ -3,4 +3,6 @@ module B where
 
 main = print "Hello, World!"
 
-foo x = 3 * x
+foo x = bar * x
+
+bar = 4

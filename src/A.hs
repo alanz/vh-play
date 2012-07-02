@@ -35,5 +35,7 @@ example =
         c <- return $ coreModule d
 
         g <- getModuleGraph
-        mapM showModule g
-        return $ (parsedSource d,"/n-----/n",  typecheckedSource d)
+        -- mapM showModule g
+        -- return $ (parsedSource d,"/n-----/n",  typecheckedSource d, "/n-=-=-=-=-=-=-/n", modInfoTyThings $ moduleInfo t)
+        -- return $ (parsedSource d,"/n-----/n",  typecheckedSource d, "/n-=-=-=-=-=-=-/n")
+        return $ (typecheckedSource d)
