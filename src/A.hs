@@ -54,84 +54,92 @@ mymain = do
 
 myShow :: (Show a, Show t) => HsBindLR a t -> String
 myShow x = case x of
-  (FunBind  id isInfix matches _coercion fvs _tickish ) -> "(FunBind:" ++ (show (unLoc id)) ++ "[" ++ (showMatchGroup matches) ++ "]" ++ ")"
-  (PatBind  a b c d e   ) -> "PatBind"
-  (VarBind  a b c       ) -> "VarBind"
-  (AbsBinds tvs evvars exports evbinds binds) -> "AbsBinds" ++ (sie tvs) ++ (sie evvars) ++ (concatMap showExport exports) {- ++ (sie evbinds) -}  ++ (concatMap (\b -> myShow $ unLoc b) $ bagToList binds)
+  (FunBind  fid _isInfix matches _coercion _fvs _tickish ) -> "(FunBind:" ++ (show (unLoc fid)) ++ "[" ++ (showMatchGroup matches) ++ "]" ++ ")"
+  (PatBind  _a _b _c _d _e   ) -> "PatBind"
+  (VarBind  _a _b _c       ) -> "VarBind"
+  (AbsBinds tvs evvars exports _evbinds binds) -> "AbsBinds" ++ (sie tvs) ++ (sie evvars) ++ (concatMap showExport exports) {- ++ (sie evbinds) -}  ++ (concatMap (\b -> myShow $ unLoc b) $ bagToList binds)
 
+sie :: [t] -> String
 sie []  = "[]"
-sie xs  = "[x]"
+sie _xs  = "[x]"
 
-showExport (ABE poly mono wrap prags) = "(ABE " ++ (show poly) ++ "," ++ (show mono) ++ ")"
+showExport :: Show a => ABExport a -> String
+showExport (ABE poly mono _wrap _prags) = "(ABE " ++ (show poly) ++ "," ++ (show mono) ++ ")"
 
-showBinds b = "foo"
+-- showBinds b = "foo"
 
-showMatchGroup (MatchGroup ms ptc) = "(" ++ (concatMap (\m -> showMatch $ unLoc m) ms) ++ ")"
+showMatchGroup :: Show t => MatchGroup t -> String
+showMatchGroup (MatchGroup ms _ptc) = "(" ++ (concatMap (\m -> showMatch $ unLoc m) ms) ++ ")"
 
-showMatch (Match lpats mt rhs) = "(Match [" ++ concatMap (\l -> showPat $ unLoc l) lpats ++ "] " ++ (showGRHSs rhs) ++ ")"
+showMatch :: Show t => Match t -> String
+showMatch (Match lpats _mt rhs) = "(Match [" ++ concatMap (\l -> showPat $ unLoc l) lpats ++ "] " ++ (showGRHSs rhs) ++ ")"
 
+showPat :: Show a => Pat a -> String
 showPat x = case x of
   VarPat id -> "(VarPat " ++ (show id) ++ ")"
   _ -> "Unknown Pat"
 
+showGRHSs :: Show t => GRHSs t -> String
 showGRHSs (GRHSs guards lb) = "(GRHSs [" ++ (concatMap (\g -> showGuard $ unLoc g) guards) ++ "] " ++ (showLocalBinds lb) ++ " )"
 
+showGuard :: Show a => GRHS a -> String
 showGuard (GRHS lstmts expr) = "(GRHS [" ++ (concatMap (\l -> showStmtLR $ unLoc l) lstmts) ++ "] "++ (showHsExpr $ unLoc expr) ++ ")"
 
 showStmtLR x = "StmtLR"
 
 showHsExpr :: (Show a) => HsExpr a -> String
 showHsExpr e = case e of
-  HsVar id -> "(HsVar " ++ (show id) ++ ")"
+  HsVar vid -> "(HsVar " ++ (show vid) ++ ")"
   HsIPVar _id -> "(HsIPVar)"
-  HsOverLit (OverLit v rb w t) -> "(HsOverLit " ++ (showOverLit v)++ ")"
-  HsLit lit -> "(HsLit)"
-  HsLam mg -> "(HsLam)"
-  HsApp e1 e2 -> "(HsApp)"
-  OpApp e1 e2 fixity e3 -> "(OpApp)"
-  NegApp e1 se1 -> "(NegApp)"
-  HsPar e1 -> "(HsPar)"
-  SectionL e1 e2 -> "(SectionL)"
-  SectionR e1 e2 -> "(SectionR)"
-  ExplicitTuple tuparg boxity -> "(ExplicitTuple)"
-  HsCase e1 mg -> "(HsCase)"
-  HsIf mse e1 e2 e3 -> "(HsIf)"
-  HsLet lb e1 -> "(HsLet)"
-  HsDo n ls t -> "(HsDo)"
-  ExplicitList t e1 -> "(ExplicitList)"
-  ExplicitPArr t e1 -> "(ExplicitPArr)"
-  RecordCon li te rb -> "(RecordCon)"
-  RecordUpd e1 rb dcs ts1 ts2 -> "(RecordUpd)"
-  ExprWithTySig e1 t -> "(ExprWithTySig)"
-  ExprWithTySigOut e1 t -> "(ExprWithTySigOut)"
-  ArithSeq te si -> "(ArithSeqInfo)"
-  PArrSeq te si -> "(PArrSeq)"
-  HsSCC fs e1 -> "(HsSCC)"
-  HsCoreAnn fs e1 -> "(HsCoreAnn)"
-  HsBracket b -> "(HsBracket)"
-  HsBracketOut b ps -> "(HsBracketOut)"
-  HsSpliceE s -> "(HsSplice)"
-  HsQuasiQuoteE qq -> "(HsQuasiQuote)"
-  HsProc lp lc -> "(HsProc)"
-  HsArrApp e1 e2 t at b -> "(HsArrAppType)"
-  HsArrForm e1 mf lcs -> "(HsArrForm)"
-  HsTick ti e1 -> "(HsTick)"
-  HsBinTick i1 i2 e1 -> "(HsBinTick)"
-  HsTickPragma a b -> "(HsTickPragma)"
+  HsOverLit (OverLit v _rb _w _t) -> "(HsOverLit " ++ (showOverLit v)++ ")"
+  HsLit _lit -> "(HsLit)"
+  HsLam _mg -> "(HsLam)"
+  HsApp _e1 _e2 -> "(HsApp)"
+  OpApp _e1 _e2 _fixity _e3 -> "(OpApp)"
+  NegApp _e1 _se1 -> "(NegApp)"
+  HsPar _e1 -> "(HsPar)"
+  SectionL _e1 _e2 -> "(SectionL)"
+  SectionR _e1 _e2 -> "(SectionR)"
+  ExplicitTuple _tuparg _boxity -> "(ExplicitTuple)"
+  HsCase _e1 _mg -> "(HsCase)"
+  HsIf _mse _e1 _e2 _e3 -> "(HsIf)"
+  HsLet _lb _e1 -> "(HsLet)"
+  HsDo _n _ls _t -> "(HsDo)"
+  ExplicitList _t _e1 -> "(ExplicitList)"
+  ExplicitPArr _t _e1 -> "(ExplicitPArr)"
+  RecordCon _li _te _rb -> "(RecordCon)"
+  RecordUpd _e1 _rb _dcs _ts1 _ts2 -> "(RecordUpd)"
+  ExprWithTySig _e1 _t -> "(ExprWithTySig)"
+  ExprWithTySigOut _e1 _t -> "(ExprWithTySigOut)"
+  ArithSeq _te _si -> "(ArithSeqInfo)"
+  PArrSeq _te _si -> "(PArrSeq)"
+  HsSCC _fs _e1 -> "(HsSCC)"
+  HsCoreAnn _fs _e1 -> "(HsCoreAnn)"
+  HsBracket _b -> "(HsBracket)"
+  HsBracketOut _b _ps -> "(HsBracketOut)"
+  HsSpliceE _s -> "(HsSplice)"
+  HsQuasiQuoteE _qq -> "(HsQuasiQuote)"
+  HsProc _lp _lc -> "(HsProc)"
+  HsArrApp _e1 _e2 _t _at _b -> "(HsArrAppType)"
+  HsArrForm _e1 _mf _lcs -> "(HsArrForm)"
+  HsTick _ti _e1 -> "(HsTick)"
+  HsBinTick _i1 _i2 _e1 -> "(HsBinTick)"
+  HsTickPragma _a _b -> "(HsTickPragma)"
   EWildPat -> "(EWildPat)"
-  EAsPat lid e1 -> "(EAsPat)"
-  EViewPat e1 e2 -> "(EViewPat)"
-  ELazyPat e1 -> "(ELazyPat)"
-  HsType lt -> "(HsType)"
-  HsWrap w e1 -> "(HsWrap)"
+  EAsPat _lid _e1 -> "(EAsPat)"
+  EViewPat _e1 _e2 -> "(EViewPat)"
+  ELazyPat _e1 -> "(ELazyPat)"
+  HsType _lt -> "(HsType)"
+  HsWrap _w _e1 -> "(HsWrap)"
   -- _         -> "(unk HsExpr)"
 
 
-
+showOverLit :: OverLitVal -> String
 showOverLit (HsIntegral i) = show i
 showOverLit (HsFractional fl) = show fl
 showOverLit (HsIsString fs) = show fs
 
+showLocalBinds :: HsLocalBindsLR t t1 -> String
 showLocalBinds x = case x of
   HsValBinds vb -> "HsValBinds"
   HsIPBinds ipb -> "HsIPBinds"

@@ -30,6 +30,7 @@ Executable vh-play
                  , ghc
                  , ghc-paths
                  , ghc-syb-utils
+                 , gtk-toy-diagrams
   Hs-Source-Dirs:  src
   ghc-options:     -Wall -fno-warn-unused-do-bind
 
