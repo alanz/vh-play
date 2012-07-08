@@ -9,6 +9,7 @@ import GHC.Paths ( libdir )
 --GHC.Paths is available via cabal install ghc-paths
 
 import DynFlags
+import Name
 
 targetFile = "./src/B.hs"
 -- targetFile = "./src/A.hs"
@@ -46,11 +47,16 @@ example =
 mymain :: IO ()
 mymain = do
   res <- example
-  let lhsbinds = bagToList res
-  -- putStrLn $ showSDoc ( ppr res )
-  -- putStrLn $ showSDoc ( ppr $ unLoc $ head lhsbinds )
-  -- putStrLn $ myShow $ unLoc $ head lhsbinds
-  putStrLn $ concatMap (\b -> "," ++ (myShow $ unLoc b)) lhsbinds
+  putStrLn $ showLhsBinds res
+  -- let lhsbinds = bagToList res
+  -- putStrLn $ concatMap (\b -> "," ++ (myShow $ unLoc b)) lhsbinds
+
+showLhsBinds res =
+  let
+    lhsbinds = bagToList res
+  in
+    concatMap (\b -> "," ++ (myShow $ unLoc b)) lhsbinds
+
 
 myShow :: (Show a, Show t) => HsBindLR a t -> String
 myShow x = case x of
@@ -95,7 +101,7 @@ showHsExpr e = case e of
   HsLit _lit -> "(HsLit)"
   HsLam _mg -> "(HsLam)"
   HsApp _e1 _e2 -> "(HsApp)"
-  OpApp _e1 _e2 _fixity _e3 -> "(OpApp)"
+  OpApp e1 e2 _fixity e3 -> "(OpApp:" ++ (showHsExpr $ unLoc e1) ++ "," ++ (showHsExpr $ unLoc e2) ++ "," ++ (showHsExpr $ unLoc e3) ++ ")"
   NegApp _e1 _se1 -> "(NegApp)"
   HsPar _e1 -> "(HsPar)"
   SectionL _e1 _e2 -> "(SectionL)"
@@ -130,7 +136,7 @@ showHsExpr e = case e of
   EViewPat _e1 _e2 -> "(EViewPat)"
   ELazyPat _e1 -> "(ELazyPat)"
   HsType _lt -> "(HsType)"
-  HsWrap _w _e1 -> "(HsWrap)"
+  HsWrap _w e1 -> "(HsWrap:(HsWrapper)," ++ (showHsExpr e1) ++ ")"
   -- _         -> "(unk HsExpr)"
 
 
@@ -139,11 +145,57 @@ showOverLit (HsIntegral i) = show i
 showOverLit (HsFractional fl) = show fl
 showOverLit (HsIsString fs) = show fs
 
-showLocalBinds :: HsLocalBindsLR t t1 -> String
+showLocalBinds :: (Show t) => HsLocalBindsLR t t1 -> String
 showLocalBinds x = case x of
-  HsValBinds vb -> "HsValBinds"
-  HsIPBinds ipb -> "HsIPBinds"
+  HsValBinds vb -> "(HsValBinds:" ++ (showHsValBindsLR vb) ++ ")"
+  HsIPBinds ipb -> "(HsIPBinds)"
   EmptyLocalBinds -> "EmptyLocalBinds"
+
+showHsValBindsLR :: (Show idL) => (HsValBindsLR idL idR) -> String
+showHsValBindsLR vb = case vb of
+  ValBindsIn b s {- (LHsBindsLR idL idR) [LSig idR] -} -> "(ValBindsIn)"
+  ValBindsOut bs ss {- [(RecFlag, LHsBinds idL)] [LSig Name] -} -> "(ValBindsOut:" ++ (concatMap show1 bs) ++ "," ++ (concatMap show2 ss) ++ ")"
+  where
+    show1 (_recFlag, binds) = "(recFlag," ++ (showLhsBinds binds) ++ ")"
+
+    show2 :: LSig Name -> String
+    show2 lsig = showSig $ unLoc lsig
+
+showSig :: Sig Name -> String
+showSig sig = case sig of
+  TypeSig lns t {- [Located name] (LHsType name) -} -> "(TypeSig [" ++ (concatMap (\n -> getOccString $ unLoc n) lns) ++ "]," ++ (showHsType $ unLoc t) ++ ")"
+  GenericSig lns t {- [Located name] (LHsType name) -} -> "(GenericSig)"
+  IdSig sid -> "(IdSig " ++ (show sid) ++ ")"
+  FixSig f {- (FixitySig name) -} -> "(FixSig)"
+  InlineSig ln p {- (Located name) InlinePragma	-} -> "(InlineSig)"
+  SpecSig ln t p {- (Located name) (LHsType name) InlinePragma -} -> "(SpecSig)"
+  SpecInstSig ln {- (LHsType name) -} -> "(SpecIntSig)"
+
+
+showHsType :: HsType Name -> String
+showHsType t = case t of
+  HsForAllTy e ns c t {- HsExplicitFlag [LHsTyVarBndr name] (LHsContext name) (LHsType name) -} -> "(HsForAllTy)"
+  HsTyVar name -> "(HsTyVar " ++ (getOccString name) ++ ")"
+  HsAppTy lt rt {- (LHsType name) (LHsType name) -} -> "(HsAppTy)"
+  HsFunTy lt rt {- (LHsType name) (LHsType name) -} -> "(HsFunTy)"
+  HsListTy n {- (LHsType name) -} -> "(HsListTy)"
+  HsPArrTy n {- (LHsType name) -} -> "(HsPArrTy)"
+  HsTupleTy ts ns {- HsTupleSort [LHsType name] -} -> "(HsTupleTy)"
+  HsOpTy lt o rt {- (LHsType name) (LHsTyOp name) (LHsType name) -} -> "(HsOpTy)"
+  HsParTy n {- (LHsType name) -} -> "(HsParTy)"
+  HsIParamTy i n {- (IPName name) (LHsType name) -} -> "(HsIParamTy)"
+  HsEqTy lt rt {- (LHsType name) (LHsType name) -} -> "(HsEqTy)"
+  HsKindSig t k {- (LHsType name) (LHsKind name) -} -> "(HsKindSig)"
+  HsQuasiQuoteTy qq {- (HsQuasiQuote name) -} -> "(HsQuasiQuote)"
+  HsSpliceTy n fv k {- (HsSplice name) FreeVars PostTcKind -} -> "(HsSpliceTy)"
+  HsDocTy n ds {- (LHsType name) LHsDocString -} -> "(HsDocTy)"
+  HsBangTy b n {- HsBang (LHsType name) -} -> "(HsBangTy)"
+  HsRecTy rns {- [ConDeclField name] -} -> "(HsRecTy)"
+  HsCoreTy ct {- Type -} -> "(HsCoreTy)"
+  HsExplicitListTy pt ns {- PostTcKind [LHsType name] -} -> "(HsExplicitListTy)"
+  HsExplicitTupleTy pts ns {- [PostTcKind] [LHsType name] -} -> "(HsExplicitTupleTy)"
+  HsWrapTy w n {- HsTyWrapper (HsType name) -} -> "(HsWrapTy)"
+
 
 -- getBind :: Located e -> e
 -- getBind (GenLocated span b) = b

@@ -8,6 +8,7 @@ module B where
 
 bar = 4 + z
   where
+    z :: Int
     z = 2
 
-x = 1
+x = 1 + 2
