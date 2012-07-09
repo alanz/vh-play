@@ -51,11 +51,7 @@ mymain = do
   -- let lhsbinds = bagToList res
   -- putStrLn $ concatMap (\b -> "," ++ (myShow $ unLoc b)) lhsbinds
 
-showLhsBinds res =
-  let
-    lhsbinds = bagToList res
-  in
-    concatMap (\b -> "," ++ (myShow $ unLoc b)) lhsbinds
+showLhsBinds res = concatMap (\b -> "," ++ (myShow $ unLoc b)) $ bagToList res
 
 
 myShow :: (Show a, Show t) => HsBindLR a t -> String
@@ -91,7 +87,15 @@ showGRHSs (GRHSs guards lb) = "(GRHSs [" ++ (concatMap (\g -> showGuard $ unLoc 
 showGuard :: Show a => GRHS a -> String
 showGuard (GRHS lstmts expr) = "(GRHS [" ++ (concatMap (\l -> showStmtLR $ unLoc l) lstmts) ++ "] "++ (showHsExpr $ unLoc expr) ++ ")"
 
-showStmtLR x = "StmtLR"
+showStmtLR x = case x of
+  LastStmt l s {- (LHsExpr idR) (SyntaxExpr idR) -} -> "(LastStmt)"
+  BindStmt lp l s1 s2 {- (LPat idL) (LHsExpr idR) (SyntaxExpr idR) (SyntaxExpr idR) -} -> "(BindStmt)"
+  ExprStmt e s1 s2 pt {- (LHsExpr idR) (SyntaxExpr idR) (SyntaxExpr idR) PostTcType -} -> "(ExprStmt)"
+  LetStmt lb  {- (HsLocalBindsLR idL idR) -} -> "(LetStmt)"
+  ParStmt a b c d {- [([LStmt idL], [idR])] (SyntaxExpr idR) (SyntaxExpr idR) (SyntaxExpr idR) -} -> "(ParStmt)"
+  TransStmt a b c d e f g h -> "(TransStmt)"
+  RecStmt a b c d e f g h i -> "(RecStmt)"
+
 
 showHsExpr :: (Show a) => HsExpr a -> String
 showHsExpr e = case e of
@@ -110,7 +114,7 @@ showHsExpr e = case e of
   HsCase _e1 _mg -> "(HsCase)"
   HsIf _mse _e1 _e2 _e3 -> "(HsIf)"
   HsLet _lb _e1 -> "(HsLet)"
-  HsDo _n _ls _t -> "(HsDo)"
+  HsDo n ls t -> "(HsDo"++(showHsStmtContext n) ++ "," ++(concatMap showLStmt ls)++","++(showPostTcType t)++")"
   ExplicitList _t _e1 -> "(ExplicitList)"
   ExplicitPArr _t _e1 -> "(ExplicitPArr)"
   RecordCon _li _te _rb -> "(RecordCon)"
@@ -139,6 +143,21 @@ showHsExpr e = case e of
   HsWrap _w e1 -> "(HsWrap:(HsWrapper)," ++ (showHsExpr e1) ++ ")"
   -- _         -> "(unk HsExpr)"
 
+showHsStmtContext sc = case sc of
+  ListComp -> "(ListComp)"
+  MonadComp -> "(MonadComp)"
+  PArrComp -> "(PArrComp)"
+  DoExpr -> "(DoExpr)"
+  MDoExpr -> "(MDoExpr)"
+  ArrowExpr -> "(ArrowExpr)"
+  GhciStmt -> "(GhciStmt)"
+  PatGuard c {- (HsMatchContext id) -} -> "(PatGuard)"
+  ParStmtCtxt c {- (HsStmtContext id) -} -> "(ParStmtCtxt)"
+  TransStmtCtxt c {- (HsStmtContext id) -} -> "(TransStmtCtxt)"
+
+showLStmt ls = showStmtLR $ unLoc ls
+
+showPostTcType ptt = "(PostTcType)"
 
 showOverLit :: OverLitVal -> String
 showOverLit (HsIntegral i) = show i

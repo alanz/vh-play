@@ -31,3 +31,4 @@ ppp :: CairoDiagram
 ppp = (s darkred ||| s red) === (s pink ||| s indianred)
   where
     s c     = square 10 # fc c
+
