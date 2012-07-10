@@ -6,6 +6,8 @@ module B where
 -- foo :: Integer -> Integer
 -- foo x = bar * x
 
+a = 3
+
 bar = 4 + z
   where
     z :: Int
@@ -29,29 +31,29 @@ f = do
 ,AbsBinds[][]
   (ABE B.x,x)
   (FunBind:x[
-    ((Match [] 
-      (GRHSs [(GRHS [] 
+    ((Match []
+      (GRHSs [(GRHS []
                (OpApp:(HsOverLit 1),
                       (HsWrap:(HsWrapper),(HsVar GHC.Num.+)),
-                      (HsOverLit 2)))] 
+                      (HsOverLit 2)))]
              EmptyLocalBinds )))])
 
 ,AbsBinds[][]
   (ABE B.bar,bar)
    (FunBind:bar[
-     ((Match [] 
-       (GRHSs [(GRHS [] 
+     ((Match []
+       (GRHSs [(GRHS []
          (OpApp:(HsOverLit 4),
                 (HsWrap:(HsWrapper),(HsVar GHC.Num.+)),
-                (HsVar z)))] 
+                (HsVar z)))]
          (HsValBinds:
             (ValBindsOut:
               (recFlag,
               ,AbsBinds[][](ABE z,z)
                 (FunBind:z[
-                  ((Match [] 
+                  ((Match []
                     (GRHSs [
-                      (GRHS [] (HsOverLit 2))] 
+                      (GRHS [] (HsOverLit 2))]
                      EmptyLocalBinds )))])),
                 (TypeSig [z],(HsTyVar Int)))) )))])
 

@@ -59,6 +59,7 @@ data Node = Node String
           | NodeMatch [Node] (Maybe Node) Node
           | NodeGRHSs [Node] Node
           | NodeGRHS  [Node] Node
+          | NodeMulti String [Node]
           deriving (Show)
 
 getParsedModule :: ParsedModule -> [Node]
@@ -136,13 +137,13 @@ getStmtLR s = case s of
 getLHSExpr le = getHSExpr $ unLoc le
 
 getHSExpr e = case e of
-  HsVar vid -> Node $ "(HsVar " ++ "(show vid)" ++ ")"
+  HsVar vid -> Node $ "(HsVar " ++ (showRdrName vid) ++ ")"
   HsIPVar _id -> Node "(HsIPVar)"
-  HsOverLit (OverLit v _rb _w _t) -> Node $ "(HsOverLit " ++ "(showOverLit v)" ++ ")"
+  HsOverLit (OverLit v _rb _w _t) -> NodeMulti "HsOverLit" [getOverLit v]
   HsLit _lit -> Node "(HsLit)"
   HsLam _mg -> Node "(HsLam)"
   HsApp _e1 _e2 -> Node "(HsApp)"
-  OpApp e1 e2 _fixity e3 -> Node $ "(OpApp:" ++ "(showHsExpr $ unLoc e1)" ++ "," ++ "(showHsExpr $ unLoc e2)" ++ "," ++ "(showHsExpr $ unLoc e3)" ++ ")"
+  OpApp e1 e2 _fixity e3 -> NodeMulti "(OpApp:" [(getHSExpr $ unLoc e1),(getHSExpr $ unLoc e2),(getHSExpr $ unLoc e3)]
   NegApp _e1 _se1 -> Node "(NegApp)"
   HsPar _e1 -> Node "(HsPar)"
   SectionL _e1 _e2 -> Node "(SectionL)"
@@ -181,6 +182,30 @@ getHSExpr e = case e of
   -- _         -> Node "(unk HsExpr)"
 
 
+getOverLit :: OverLitVal -> Node
+getOverLit (HsIntegral i) = Node $ "Integral:"++ (show i)
+getOverLit (HsFractional fl) = Node $ "Fractional:"++(show fl)
+getOverLit (HsIsString fs) = Node $ "String:"++(show fs)
 
 
-getHsLocalBinds _ = Node "HsLocalBinds"
+
+getHsLocalBinds x = case x of
+  HsValBinds vb -> NodeMulti "(HsValBinds:" [(getHsValBindsLR vb)]
+  HsIPBinds ipb -> Node "(HsIPBinds)"
+  EmptyLocalBinds -> Node "EmptyLocalBinds"
+
+getHsValBindsLR vb = case vb of
+  ValBindsIn b s {- (LHsBindsLR idL idR) [LSig idR] -} -> NodeMulti "(ValBindsIn)" (map getLHsBindLR $ bagToList b)
+  ValBindsOut bs ss {- [(RecFlag, LHsBinds idL)] [LSig Name] -} -> Node $ "(ValBindsOut:" ++ "(concatMap show1 bs)" ++ "," ++ "(concatMap show2 ss)" ++ ")"
+  {-
+  where
+    show1 (_recFlag, binds) = "(recFlag," ++ (showLhsBinds binds) ++ ")"
+
+    show2 :: LSig Name -> String
+    show2 lsig = showSig $ unLoc lsig
+-}
+
+-- getLHsBindLR lb = getHsBindLR $ unLoc lb
+getLHsBindLR lb = getHsBind $ unLoc lb
+
+-- getHsBindLR b = undefined
