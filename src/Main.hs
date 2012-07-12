@@ -30,6 +30,7 @@ main = start $
     ; NetworkUI.create state emptyGlobal -- global state is a list of possible flows
                              undefined	 -- dummy node state (for typechecker)
                              undefined	 -- dummy edge state (for typechecker)
+                             undefined   -- dummy network config (for typechecker)
                              palette     -- default palette
                              graphOps	 -- operations available from menu
     }
@@ -66,8 +67,12 @@ instance Descriptor DfdNode where
 instance Descriptor [DfdFlow] where
   descriptor xs = show $ map (\(DfdFlow s) -> s) xs
 
+instance NetworkConfig () where
+  prohibitDoubleEdges _ = False
+  prohibitReverseEdges _ = False
+
 -- GraphOps g n e
-graphOps :: GraphOps DfdGlobal DfdNode [DfdFlow]
+graphOps :: GraphOps DfdGlobal DfdNode [DfdFlow] ()
 graphOps = GraphOps { ioOps = map pureGraphOp
                                   [  ] }
 
