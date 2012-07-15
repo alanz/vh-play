@@ -2,6 +2,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Graphics.Blobs.VH.Loader where
 
+{-
+
+This file is based initially on Language.Haskell.BuildWrapper.CMD
+
+https://github.com/JPMoresmau/BuildWrapper/blob/master/src-exe/Language/Haskell/BuildWrapper/CMD.hs
+
+-}
+
 import Control.Monad.State
 import Data.Aeson
 import Data.Version (showVersion)
@@ -37,66 +45,6 @@ data BWCmd=Synchronize {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile:
     deriving (Show,Read,Data,Typeable)
 
 
-tf :: TempFolder
-tf=".dist-buildwrapper" &= typDir &= help "temporary folder, relative to cabal file folder"
-cp :: CabalPath
-cp="cabal" &= typFile &= help "location of cabal executable"
-cf :: CabalFile
-cf=def &= typFile &= help "cabal file"
-fp :: FilePath
-fp=def &= typFile &= help "relative path of file to process"
-ff :: Bool
-ff=def &= help "overwrite newer file"
-uf :: String
-uf=def &= help "user cabal flags"
-co :: [String]
-co=def &= help "cabal extra parameters"
-
-v :: Verbosity
-v=Normal &= help "verbosity"
-wc :: WhichCabal
-wc=Target &= help "which cabal file to use: original or temporary"
-
-cc :: String
-cc=def &= help "cabal component"
-
-ra :: Bool
-ra=def &= help "return all source paths"
-
-msynchronize :: BWCmd
-msynchronize = Synchronize tf cp cf uf co ff
-msynchronize1 :: BWCmd
-msynchronize1 = Synchronize1 tf cp cf uf co ff fp
-mconfigure :: BWCmd
-mconfigure = Configure tf cp cf uf co v wc
-mwrite :: BWCmd
-mwrite= Write tf cp cf uf co fp (def &= help "file contents")
-mbuild :: BWCmd
-mbuild = Build tf cp cf uf co v (def &= help "output compilation and linking result") wc
-mbuild1 :: BWCmd
-mbuild1 = Build1 tf cp cf uf co fp
-mgetbf :: BWCmd
-mgetbf = GetBuildFlags tf cp cf uf co fp
-moutline :: BWCmd
-moutline = Outline tf cp cf uf co fp
-mtokenTypes :: BWCmd
-mtokenTypes= TokenTypes tf cp cf uf co fp
-moccurrences :: BWCmd
-moccurrences=Occurrences tf cp cf uf co fp (def &= help "text to search occurrences of" &= name "token")
-mthingAtPoint :: BWCmd
-mthingAtPoint=ThingAtPointCmd tf cp cf uf co fp
-        (def &= help "line" &= name "line")
-        (def &= help "column" &= name "column")
-mnamesInScope :: BWCmd
-mnamesInScope=NamesInScope tf cp cf uf co fp
-mdependencies :: BWCmd
-mdependencies=Dependencies tf cp cf uf co
-mcomponents :: BWCmd
-mcomponents=Components tf cp cf uf co
-mgenerateUsage :: BWCmd
-mgenerateUsage=GenerateUsage tf cp cf uf co ra cc
-
-
 runCmd :: (ToJSON a) => BWCmd -> StateT BuildWrapperState IO a -> IO ()
 runCmd = runCmdV Normal
 
@@ -104,6 +52,13 @@ runCmdV:: (ToJSON a) => Verbosity -> BWCmd -> StateT BuildWrapperState IO a -> I
 runCmdV vb cmd f =
   evalStateT f (BuildWrapperState (tempFolder cmd) (cabalPath cmd) (cabalFile cmd) vb (cabalFlags cmd) (cabalOption cmd))
   >>= BSC.putStrLn . BS.append "build-wrapper-json:" . encode
+
+runCmdVt
+  :: Monad m =>
+     Verbosity -> BWCmd -> StateT BuildWrapperState m a -> m a
+runCmdVt vb cmd f =
+  evalStateT f (BuildWrapperState (tempFolder cmd) (cabalPath cmd) (cabalFile cmd) vb (cabalFlags cmd) (cabalOption cmd))
+
 
 ctempFolder :: TempFolder
 ctempFolder  = ".dist-buildwrapper"
@@ -117,7 +72,7 @@ ccabalFile   = "vh-play.cabal"
 ccabalFlags :: String
 ccabalFlags  = ""
 
-ccabalOption :: [a]
+ccabalOption :: [String]
 ccabalOption = []
 
 sync :: IO ()
@@ -146,4 +101,28 @@ outline filePath = runCmd outlineCmd f
                           , file = filePath
                           }
     f = (getOutline filePath)
+
+outline' :: FilePath -> IO (OpResult OutlineResult)
+outline' filePath = runCmdVt Normal outlineCmd f
+  where
+    outlineCmd = Outline
+                          { tempFolder  = ctempFolder
+                          , cabalPath   = ccabalPath
+                          , cabalFile   = ccabalFile
+                          , cabalFlags  = ccabalFlags
+                          , cabalOption = ccabalOption
+                          , file = filePath
+                          }
+    f = (getOutline filePath)
+
+
+outl :: FilePath -> IO [OutlineDef]
+outl filePath = do
+  (res, notes) <- outline' filePath
+  return (orOutline res)
+
+getPage :: FilePath -> IO [OutlineDef]
+getPage filePath = do
+  outline <- outl filePath
+  return outline
 

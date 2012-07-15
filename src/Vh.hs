@@ -3,19 +3,25 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Main (main, gain) where
 
+import qualified Data.Text as T
 import Graphics.Blobs.Colors
 import Graphics.Blobs.Document
 import Graphics.Blobs.InfoKind
 import Graphics.Blobs.Math
+import Graphics.Blobs.Network
 import Graphics.Blobs.Operations
 import Graphics.Blobs.Shape
+import Graphics.Blobs.State
 import Graphics.Blobs.VH.Loader
 import Graphics.Blobs.VH.Types
 import Graphics.Blobs.VH.UI
 import Graphics.UI.WX
+import qualified Data.IntMap as IntMap
 import qualified Graphics.Blobs.NetworkUI as NetworkUI
 import qualified Graphics.Blobs.Palette as P
+import qualified Graphics.Blobs.PersistentDocument as PD
 import qualified Graphics.Blobs.State as State
+import Language.Haskell.BuildWrapper.Base
 
 -- ---------------------------------------------------------------------
 
@@ -73,9 +79,73 @@ instance NetworkConfig () where
 
 -- GraphOps g n e c
 graphOps :: GraphOps VhGlobal VhNode [VhFlow] ()
-graphOps = GraphOps { ioOps = map pureGraphOp
-                                  [  ] }
+graphOps = GraphOps { ioOps = (myGraphOp ("Load file",loadOp)) : (map pureGraphOp
+                                  [ ("change the network", changeNet)  ]) }
 
+changeNet  (g, nodemap, edgemap) =
+  (g, getIt, edgemap)
+
+getIt :: IntMap.IntMap (Node VhNode)
+getIt = IntMap.fromList [(1, constructNode "Name" (DoublePoint 7 5) True (Left "External") VhExternal Nothing )]
+
+-- ---------------------------------------------------------------------
+
+testOp :: (g, IntMap.IntMap (Node VhNode), IntMap.IntMap (Edge e))
+          -> IO (g,IntMap.IntMap (Node VhNode), IntMap.IntMap (Edge e))
+testOp (g,n,e) = do
+  return (g,getIt,e)
+
+loadOp :: (g, IntMap.IntMap (Node VhNode), IntMap.IntMap (Edge e))
+          -> IO (g,IntMap.IntMap (Node VhNode), IntMap.IntMap (Edge e))
+loadOp  (g,n,e) = do
+  outlines <- getPage "./src/Vh.hs"
+  let xs = map (\ol -> mkNode (T.unpack  $ odName ol)) outlines
+      -- xs = map (\ol -> mkNode ol) ["mary","joe","bob"]
+      -- xs = map (\ol -> mkNode ol) ["mary"]
+      -- xs = [mkNode (show $ length outlines)]
+      ns = IntMap.fromList $ zip [1..] xs
+  return (g,ns,e)
+
+mkNode :: String -> Node VhNode
+mkNode name = constructNode name (DoublePoint 7 5) True (Left "External") VhExternal Nothing
+
+-- ---------------------------------------------------------------------
+
+myGraphOp
+  :: (String,
+      (g, IntMap.IntMap (Node VhNode), IntMap.IntMap (Edge e)) -> IO (g,IntMap.IntMap (Node VhNode), IntMap.IntMap (Edge e)))
+     -> (String, State g VhNode e c -> IO ())
+myGraphOp (opName,operation) =
+  (opName, \state-> do{ pDoc <- getDocument state
+                      ; doc  <- PD.getDocument pDoc
+                      ; let network = getNetwork doc
+                            g = getGlobalInfo doc
+                            n = networkNodes network
+                            e = networkEdges network
+                      ; (g',n',e') <- operation (g,n,e)
+                      ; let
+                            network' = setNodeAssocs (IntMap.assocs n')
+                                       $ setEdgeAssocs (IntMap.assocs e')
+                                       -- $ setGlobalInfo g'
+                                       $ network
+                      ; PD.updateDocument opName (setNetworkAndGlobal network' g') pDoc
+                      }
+  )
+
+
+
+
+
+{-
+data Node n = Node
+    { nodePosition  :: DoublePoint  -- ^ the position of the node on screen
+    , nodeName      :: !String
+    , nodeNameAbove :: Bool         -- ^ should the name be displayed above (True) of below (False)
+    , nodeShape     :: Either String Shape.Shape	-- ^ name from palette, or shape
+    , nodeInfo      :: n
+    , nodeArity     :: Maybe (PortNr,PortNr)	-- ^ number of in/out connection ports
+    } deriving (Show, Read, Data, Typeable)
+-}
 
 {-
 -- A simple range of operations on a graph network.
@@ -175,6 +245,6 @@ palette =   P.Palette
 
 -- ---------------------------------------------------------------------
 
-foo = example "./src/Vh.hs"
+-- foo = example "./src/Vh.hs"
 
 -- EOF
