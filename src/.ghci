@@ -5,3 +5,4 @@
 -- :set -i./dist/build
 -- :set -v
 :set -package ghc
+-- (setq ghc-ghc-options '("-i./src"))

@@ -4,12 +4,11 @@
 module Main (main, gain) where
 
 import Graphics.Blobs.Colors
-import Graphics.Blobs.CommonIO
+import Graphics.Blobs.Document
 import Graphics.Blobs.Dfd.Types
 import Graphics.Blobs.Dfd.UI
 import Graphics.Blobs.InfoKind
 import Graphics.Blobs.Math
-import Graphics.Blobs.NetworkFile
 import Graphics.Blobs.Operations
 import Graphics.Blobs.Shape
 import Graphics.UI.WX
@@ -31,7 +30,7 @@ main = start $
                              undefined	 -- dummy node state (for typechecker)
                              undefined	 -- dummy edge state (for typechecker)
                              undefined   -- dummy network config (for typechecker)
-                             palette     -- default palette
+                             palettes    -- default palette
                              graphOps	 -- operations available from menu
     }
 
@@ -71,7 +70,7 @@ instance NetworkConfig () where
   prohibitDoubleEdges _ = False
   prohibitReverseEdges _ = False
 
--- GraphOps g n e
+-- GraphOps g n e c
 graphOps :: GraphOps DfdGlobal DfdNode [DfdFlow] ()
 graphOps = GraphOps { ioOps = map pureGraphOp
                                   [  ] }
@@ -111,16 +110,44 @@ gain = main -- :-)
 
 -- ---------------------------------------------------------------------
 
-palette :: P.Palette DfdNode
-palette =   P.Palette
-  [ ("Process"
+palettes :: [(PaletteId, P.Palette DfdNode)]
+palettes = [(toPaletteId "context",contextPalette)
+           ,(toPaletteId "dfd",    dfdPalette)
+            ]
+
+
+contextPalette :: P.Palette DfdNode
+contextPalette = P.Palette
+  [ paletteEntryProcess
+  , paletteEntryExternal
+  ]
+
+dfdPalette :: P.Palette DfdNode
+dfdPalette = P.Palette
+  [ paletteEntryProcess
+  , paletteEntryStore
+  , paletteEntryIn
+  , paletteEntryOut
+  ]
+
+
+-- ---------------------------------------------------------------------
+
+paletteEntryProcess :: (String, (Shape, Maybe DfdNode))
+paletteEntryProcess =
+   ("Process"
     , ( Circle  { shapeStyle = ShapeStyle { styleStrokeWidth = 1
                                         , styleStrokeColour = RGB 0 0 0
                                         , styleFill = RGB 128 200 128
                                         }
               , shapeRadius = 0.5 }
       , Just DfdProcess ))
-  , ("External"
+
+
+
+paletteEntryExternal :: (String, (Shape, Maybe DfdNode))
+paletteEntryExternal =
+  ("External"
     , ( Polygon { shapeStyle = ShapeStyle { styleStrokeWidth = 2
                                         , styleStrokeColour = RGB 0 0 0
                                         , styleFill = RGB 200 128 200
@@ -130,7 +157,10 @@ palette =   P.Palette
                                  , DoublePoint 0.5 0.5
                                  , DoublePoint (-0.5) 0.5 ] }
       , Just DfdExternal ))
-  , ("Store"
+
+paletteEntryStore :: (String, (Shape, Maybe DfdNode))
+paletteEntryStore =
+  ("Store"
     , ( Composite { shapeSegments =
                     [ Lines { shapeStyle = ShapeStyle
                                                { styleStrokeWidth = 2
@@ -148,7 +178,10 @@ palette =   P.Palette
                                                , DoublePoint  0.6 0.4 ] }
                     ] }
       , Just DfdStore ))
-  , ("In"
+
+paletteEntryIn :: (String, (Shape, Maybe DfdNode))
+paletteEntryIn =
+  ("In"
     , ( Polygon { shapeStyle = ShapeStyle { styleStrokeWidth = 1
                                         , styleStrokeColour = RGB 0 0 0
                                         , styleFill = RGB 128 200 200
@@ -158,7 +191,9 @@ palette =   P.Palette
                                    , DoublePoint ( 0.2) ( 0.0) ] }
       , Just DfdPortIn ))
 
-  , ("Out"
+paletteEntryOut :: (String, (Shape, Maybe DfdNode))
+paletteEntryOut =
+  ("Out"
     , ( Polygon { shapeStyle = ShapeStyle { styleStrokeWidth = 1
                                           , styleStrokeColour = RGB 0 0 0
                                           , styleFill = RGB 128 200 200
@@ -167,5 +202,5 @@ palette =   P.Palette
                                    , DoublePoint ( 0.2) (-0.2)
                                    , DoublePoint ( 0.2) ( 0.2) ] }
       , Just DfdPortOut ))
-  ]
+
 

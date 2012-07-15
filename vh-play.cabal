@@ -31,6 +31,7 @@ Executable vh-play
                  , ghc-paths
                  , ghc-syb-utils
                  , gtk-toy-diagrams
+                 , buildwrapper
   Hs-Source-Dirs:  src
   ghc-options:     -Wall -fno-warn-unused-do-bind
 

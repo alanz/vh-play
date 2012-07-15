@@ -1,0 +1,14 @@
+Step 1
+------
+
+Turn a Haskell program into a Blobs Document
+
+a. One page per module, level changes defined by import graph.
+b. Initial nodes are the top level things presented in the GHC
+   ParsedModule
+c. No Edges for now.
+
+Step 2
+------
+
+TBD

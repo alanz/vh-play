@@ -8,4 +8,7 @@ Resources
   vacuum-cairo
   SourceGraph
   https://github.com/Peaker/bottle
+  ghc-mod
+  buildwrapper
+  scion-browser
 

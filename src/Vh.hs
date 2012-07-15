@@ -1,16 +1,17 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Main (main, gain) where
 
 import Graphics.Blobs.Colors
-import Graphics.Blobs.CommonIO
-import Graphics.Blobs.VH.Types
-import Graphics.Blobs.VH.UI
+import Graphics.Blobs.Document
 import Graphics.Blobs.InfoKind
 import Graphics.Blobs.Math
-import Graphics.Blobs.NetworkFile
 import Graphics.Blobs.Operations
 import Graphics.Blobs.Shape
+import Graphics.Blobs.VH.Loader
+import Graphics.Blobs.VH.Types
+import Graphics.Blobs.VH.UI
 import Graphics.UI.WX
 import qualified Graphics.Blobs.NetworkUI as NetworkUI
 import qualified Graphics.Blobs.Palette as P
@@ -29,7 +30,8 @@ main = start $
     ; NetworkUI.create state emptyGlobal -- global state is a list of possible flows
                              undefined	 -- dummy node state (for typechecker)
                              undefined	 -- dummy edge state (for typechecker)
-                             palette     -- default palette
+                             undefined   -- dummy network config (for typechecker)
+                             palettes    -- default palette
                              graphOps	 -- operations available from menu
     }
 
@@ -65,8 +67,12 @@ instance Descriptor VhNode where
 instance Descriptor [VhFlow] where
   descriptor xs = show $ map (\(VhFlow s) -> s) xs
 
--- GraphOps g n e
-graphOps :: GraphOps VhGlobal VhNode [VhFlow]
+instance NetworkConfig () where
+  prohibitDoubleEdges _ = False
+  prohibitReverseEdges _ = False
+
+-- GraphOps g n e c
+graphOps :: GraphOps VhGlobal VhNode [VhFlow] ()
 graphOps = GraphOps { ioOps = map pureGraphOp
                                   [  ] }
 
@@ -104,6 +110,10 @@ gain :: IO ()
 gain = main -- :-)
 
 -- ---------------------------------------------------------------------
+
+palettes :: [(PaletteId, P.Palette VhNode)]
+palettes = [(toPaletteId "default",palette)
+           ]
 
 palette :: P.Palette VhNode
 palette =   P.Palette
@@ -163,3 +173,8 @@ palette =   P.Palette
       , Just VhPortOut ))
   ]
 
+-- ---------------------------------------------------------------------
+
+foo = example "./src/Vh.hs"
+
+-- EOF
