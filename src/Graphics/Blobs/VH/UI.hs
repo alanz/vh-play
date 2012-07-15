@@ -8,11 +8,18 @@ import Graphics.UI.WXCore
 import Graphics.UI.XTC
 
 instance Labeled VhNode where
-  toLabel VhExternal = "External"
-  toLabel VhProcess  = "Process"
-  toLabel VhStore    = "Store"
-  toLabel VhPortIn   = "In"
-  toLabel VhPortOut  = "Out"
+  toLabel VhClass       = "Class"
+  toLabel VhData        = "Data"
+  toLabel VhFamily      = "Family"
+  toLabel VhFunction    = "Function"
+  toLabel VhPattern     = "Pattern"
+  toLabel VhSyn         = "Syn"
+  toLabel VhType        = "Type"
+  toLabel VhInstance    = "Instance"
+  toLabel VhField       = "Field"
+  toLabel VhConstructor = "Constructor"
+  toLabel VhSplice      = "Splice"
+
 
 instance Labeled VhFlow where
   toLabel (VhFlow x) = x
@@ -27,17 +34,25 @@ editNodeDialog :: Window a1             -- ^ Parent frame
                   -> IO (Maybe VhNode) -- ^ Updated value if changed
 editNodeDialog parentWindow dialogTitle initial _global = do
   do{ let selectVal = case initial of
-            VhExternal -> 0
-            VhProcess  -> 1
-            VhStore    -> 2
-            VhPortIn   -> 3
-            VhPortOut  -> 4
+            VhClass -> 0
+            VhData -> 1
+            VhFamily -> 2
+            VhFunction -> 3
+            VhPattern -> 4
+            VhSyn -> 5
+            VhType -> 6
+            VhInstance -> 7
+            VhField -> 8
+            VhConstructor -> 9
+            VhSplice -> 10
+
     ; d <- dialog parentWindow [text := dialogTitle]
     ; ok    <- button d [text := "Ok"]
     ; can   <- button d [text := "Cancel", identity := wxID_CANCEL]
     ; buttonSetDefault ok
 
-    ; rb <- (mkRadioView d Vertical [VhExternal, VhProcess, VhStore, VhPortIn, VhPortOut ]
+    ; rb <- (mkRadioView d Vertical [VhClass,VhData,VhFunction,VhPattern,VhSyn,
+                                     VhType,VhInstance,VhField,VhConstructor,VhSplice]
             [ text := "Node Type", selection := selectVal ]) :: IO (RadioView VhNode ())
 
     ; set d [layout :=  column 2 [  widget rb

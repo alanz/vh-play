@@ -11,7 +11,19 @@ import Data.Aeson.TH
 
 -- ---------------------------------------------------------------------
 
-data VhNode = VhExternal | VhProcess | VhStore | VhPortIn | VhPortOut deriving (Show,Eq,Data,Typeable)
+data VhNode =
+  VhClass
+  | VhData
+  | VhFamily
+  | VhFunction
+  | VhPattern
+  | VhSyn
+  | VhType
+  | VhInstance
+  | VhField
+  | VhConstructor
+  | VhSplice
+  deriving (Show,Eq,Data,Typeable)
 
 data VhFlow = VhFlow String deriving (Show,Eq,Ord,Data,Typeable)
 
@@ -23,7 +35,7 @@ deriveJSON id ''VhGlobal
 
 instance Parse VhNode where
     parse = do { isWord "VhNode"
-               ; return VhExternal
+               ; return VhFunction
                }
 
 
