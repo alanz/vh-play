@@ -1,6 +1,11 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Graphics.Blobs.VH.Loader where
+module Graphics.Blobs.VH.Loader
+       (
+         getPage
+       , getFiles
+       , getAllPages
+       ) where
 
 {-
 
@@ -33,7 +38,7 @@ data BWCmd=Synchronize {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile:
         | Configure {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], verbosity::Verbosity,cabalTarget::WhichCabal}
         | Build {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], verbosity::Verbosity,output::Bool,cabalTarget::WhichCabal}
         | Build1 {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath}
-        | Outline {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath}
+        | Outline {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath} -- In Use
         | TokenTypes {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath}
         | Occurrences {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath,token::String}
         | ThingAtPointCmd {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath, line::Int, column::Int}
@@ -42,6 +47,8 @@ data BWCmd=Synchronize {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile:
         | Components {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String]}
         | GetBuildFlags {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath}
         | GenerateUsage {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], returnAll:: Bool, cabalComponent::String}
+
+        | GetFiles {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String] } -- In use
     deriving (Show,Read,Data,Typeable)
 
 
@@ -88,7 +95,7 @@ sync = runCmd syncCmd f
                           }
     f = (synchronize True)
 
-
+{-
 outline :: FilePath -> IO ()
 outline filePath = runCmd outlineCmd f
   where
@@ -101,6 +108,7 @@ outline filePath = runCmd outlineCmd f
                           , file = filePath
                           }
     f = (getOutline filePath)
+-}
 
 outline' :: FilePath -> IO (OpResult OutlineResult)
 outline' filePath = runCmdVt Normal outlineCmd f
@@ -116,13 +124,37 @@ outline' filePath = runCmdVt Normal outlineCmd f
     f = (getOutline filePath)
 
 
-outl :: FilePath -> IO [OutlineDef]
-outl filePath = do
-  (res, notes) <- outline' filePath
-  return (orOutline res)
-
 getPage :: FilePath -> IO [OutlineDef]
 getPage filePath = do
-  outline <- outl filePath
-  return outline
+  (res, _notes) <- outline' filePath
+  return (orOutline res)
 
+-- ---------------------------------------------------------------------
+
+getFilesBw :: BuildWrapper(OpResult [FilePath])
+getFilesBw = do
+        -- cf < - gets cabalFile
+        (fileList,ns)<-getFilesToCopy
+        return ((fileList), ns)
+
+getFiles :: IO [FilePath]
+getFiles = do
+  let
+    getFilesCmd = GetFiles
+                          { tempFolder  = ctempFolder
+                          , cabalPath   = ccabalPath
+                          , cabalFile   = ccabalFile
+                          , cabalFlags  = ccabalFlags
+                          , cabalOption = ccabalOption
+                          }
+    f = (getFilesBw)
+  (files,_notes) <- runCmdVt Normal getFilesCmd f
+  return files
+
+-- ---------------------------------------------------------------------
+
+getAllPages :: IO [[OutlineDef]]
+getAllPages = do
+  files <- getFiles
+  m1<-mapM getPage files
+  return m1

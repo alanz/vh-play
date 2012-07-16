@@ -11,7 +11,6 @@ import Control.Monad.Reader
 import Language.Haskell.Exts
 
 
-
 {-
 main =
     defaultErrorHandler defaultDynFlags $ do
@@ -27,3 +26,5 @@ main =
 foo = (liftM prettyPrint) $
       (liftM fst) $ (liftM fromParseResult) $
       parseFileWithComments defaultParseMode "./src/A.hs"
+
+

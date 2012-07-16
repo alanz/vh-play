@@ -98,12 +98,12 @@ getIt = IntMap.fromList [(1, constructNode "Name" (DoublePoint 7 5) True (Left "
 
 testOp :: (g, IntMap.IntMap (Node VhNode), IntMap.IntMap (Edge e))
           -> IO (g,IntMap.IntMap (Node VhNode), IntMap.IntMap (Edge e))
-testOp (g,n,e) = do
+testOp (g,_n,e) = do
   return (g,getIt,e)
 
 loadOp :: (g, IntMap.IntMap (Node VhNode), IntMap.IntMap (Edge e))
           -> IO (g,IntMap.IntMap (Node VhNode), IntMap.IntMap (Edge e))
-loadOp  (g,n,e) = do
+loadOp  (g,_n,e) = do
   outlines <- getPage "./src/Vh.hs"
   let xs = map (\(p,ol) -> mkNode (T.unpack  $ odName ol) p (outlineTypeToVhNode $ head $ odType ol)) $ zip (cycle posns) outlines
       -- xs = map (\ol -> mkNode ol) ["mary","joe","bob"]
@@ -112,7 +112,7 @@ loadOp  (g,n,e) = do
       ns = IntMap.fromList $ zip [1..] xs
   return (g,ns,e)
 
-
+outlineTypeToVhNode :: OutlineDefType -> VhNode
 outlineTypeToVhNode Class       = VhClass
 outlineTypeToVhNode Data        = VhData
 outlineTypeToVhNode Family      = VhFamily
@@ -125,6 +125,7 @@ outlineTypeToVhNode Field       = VhField
 outlineTypeToVhNode Constructor = VhConstructor
 outlineTypeToVhNode Splice      = VhSplice
 
+posns :: [DoublePoint]
 posns = [DoublePoint (a/1) (b/1) | a <- [1,4..15], b <- [1,3..9]]
 
 mkNode :: String -> DoublePoint-> VhNode -> Node VhNode
