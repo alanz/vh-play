@@ -3,8 +3,8 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Main (main) where
 
+import Data.List
 import Graphics.Blobs.Colors
-import Graphics.Blobs.Document
 import Graphics.Blobs.InfoKind
 import Graphics.Blobs.Math
 import Graphics.Blobs.Network
@@ -18,6 +18,7 @@ import Graphics.UI.WX
 import Language.Haskell.BuildWrapper.Base
 import qualified Data.IntMap as IntMap
 import qualified Data.Text as T
+import qualified Graphics.Blobs.Document as D
 import qualified Graphics.Blobs.NetworkUI as NetworkUI
 import qualified Graphics.Blobs.Palette as P
 import qualified Graphics.Blobs.PersistentDocument as PD
@@ -85,8 +86,9 @@ instance NetworkConfig () where
 
 -- GraphOps g n e c
 graphOps :: GraphOps VhGlobal VhNode [VhFlow] ()
-graphOps = GraphOps { ioOps = (myGraphOp ("Load file",loadOp)) : (map pureGraphOp
-                                  [ ("change the network", changeNet)  ]) }
+graphOps = GraphOps { ioOps = (myGraphOp ("Load single file",loadOp)) :
+                              (docGraphOp ("Load project", loadProjectOp)) :
+                              (map pureGraphOp [ ("change the network", changeNet)  ]) }
 
 changeNet  (g, nodemap, edgemap) =
   (g, getIt, edgemap)
@@ -105,12 +107,28 @@ loadOp :: (g, IntMap.IntMap (Node VhNode), IntMap.IntMap (Edge e))
           -> IO (g,IntMap.IntMap (Node VhNode), IntMap.IntMap (Edge e))
 loadOp  (g,_n,e) = do
   outlines <- getPage "./src/Vh.hs"
+  {-
   let xs = map (\(p,ol) -> mkNode (T.unpack  $ odName ol) p (outlineTypeToVhNode $ head $ odType ol)) $ zip (cycle posns) outlines
-      -- xs = map (\ol -> mkNode ol) ["mary","joe","bob"]
-      -- xs = map (\ol -> mkNode ol) ["mary"]
-      -- xs = [mkNode (show $ length outlines)]
       ns = IntMap.fromList $ zip [1..] xs
+  -}
+  let ns = outlinesToNetwork outlines
   return (g,ns,e)
+
+outlinesToNetwork outlines =
+  let
+    xs = map (\(p,ol) -> mkNode (T.unpack  $ odName ol) p (outlineTypeToVhNode $ head $ odType ol)) $ zip (cycle posns) outlines
+    ns = IntMap.fromList $ zip [1..] xs
+  in
+   ns
+
+loadProjectOp :: D.Document g n e c -> IO (D.Document g n e c)
+loadProjectOp doc = do
+  allOutlines <- getAllPages
+  let nss = map outlinesToNetwork allOutlines
+      doc' = D.setNetworkAssocs [] doc
+      -- doc'' = foldl' (\d (i,ns) -> D.setNetworkAndSel (D.toNetworkId ("p" ++ (show i))) (setNodeAssocs (zip [1..] ns) D.empty) d) doc (zip [1..] nss)
+      -- TODO: fix prior line
+  return doc'
 
 outlineTypeToVhNode :: OutlineDefType -> VhNode
 outlineTypeToVhNode Class       = VhClass
@@ -140,8 +158,8 @@ myGraphOp
 myGraphOp (opName,operation) =
   (opName, \state-> do{ pDoc <- getDocument state
                       ; doc  <- PD.getDocument pDoc
-                      ; let network = getNetwork doc
-                            g = getGlobalInfo doc
+                      ; let network = D.getNetwork doc
+                            g = D.getGlobalInfo doc
                             n = networkNodes network
                             e = networkEdges network
                       ; (g',n',e') <- operation (g,n,e)
@@ -150,15 +168,27 @@ myGraphOp (opName,operation) =
                                        $ setEdgeAssocs (IntMap.assocs e')
                                        -- $ setGlobalInfo g'
                                        $ network
-                      ; PD.updateDocument opName (setNetworkAndGlobal network' g') pDoc
+                      ; PD.updateDocument opName (D.setNetworkAndGlobal network' g') pDoc
                       }
   )
 
+-- TODO: migrate this to the main Blobs, together with its pure version
+docGraphOp
+  :: (String,
+      (D.Document g n e c) -> IO (D.Document g n e c))
+     -> (String, State g n e c -> IO ())
+docGraphOp (opName,operation) =
+  (opName, \state-> do{ pDoc <- getDocument state
+                      ; doc  <- PD.getDocument pDoc
+                      ; doc' <- operation doc
+                      ; PD.setDocument opName doc' pDoc
+                      }
+  )
 
 -- ---------------------------------------------------------------------
 
-palettes :: [(PaletteId, P.Palette VhNode)]
-palettes = [(toPaletteId "default",palette)
+palettes :: [(D.PaletteId, P.Palette VhNode)]
+palettes = [(D.toPaletteId "default",palette)
            ]
 
 palette :: P.Palette VhNode
