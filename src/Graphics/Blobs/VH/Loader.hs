@@ -15,6 +15,7 @@ https://github.com/JPMoresmau/BuildWrapper/blob/master/src-exe/Language/Haskell/
 
 -}
 
+-- import qualified MonadUtils as GMU
 import Control.Monad.State
 import Data.Aeson
 import Data.Version (showVersion)
@@ -49,6 +50,7 @@ data BWCmd=Synchronize {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile:
         | GenerateUsage {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], returnAll:: Bool, cabalComponent::String}
 
         | GetFiles {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String] } -- In use
+        | ModuleInfo {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String] } -- In use
     deriving (Show,Read,Data,Typeable)
 
 
@@ -124,10 +126,54 @@ outline' filePath = runCmdVt Normal outlineCmd f
     f = (getOutline filePath)
 
 
-getPage :: FilePath -> IO [OutlineDef]
+getPage :: FilePath -> IO (String, [OutlineDef])
 getPage filePath = do
   (res, _notes) <- outline' filePath
-  return (orOutline res)
+  modulename <- getModuleInfo' filePath
+  return (modulename, (orOutline res))
+
+-- ---------------------------------------------------------------------
+
+-- | IO function to getModuleInfo
+-- getModuleInfo' :: FilePath -> IO (String)
+getModuleInfo' filePath = do
+  let
+    moduleInfoCmd = ModuleInfo
+                          { tempFolder  = ctempFolder
+                          , cabalPath   = ccabalPath
+                          , cabalFile   = ccabalFile
+                          , cabalFlags  = ccabalFlags
+                          , cabalOption = ccabalOption
+                          }
+    f = (getModuleInfo filePath)
+    -- f = (getOutline filePath)
+  (info,notes) <- runCmdVt Normal moduleInfoCmd f
+  return info
+
+-- | BuildWrapper function to getModuleInfo
+getModuleInfo :: FilePath -> BuildWrapper(OpResult (String))
+getModuleInfo filePath = do
+  mi <- withGHCAST filePath getModuleInfoBw
+  return $ case mi of
+    (Just m,ns)->(m,ns)
+    (Nothing,ns)-> ("aaNothing",ns)
+  -- return mi
+  -- return (Just "foo",[])
+
+
+-- | Function to be passed in to withGHCAST
+{-
+getModuleInfoBw :: FilePath -- ^ source file path
+                   -> FilePath -- ^ base directory
+                   -> String  -- ^ module name
+                   -> [String] -- ^  build flags
+                   -> IO (String)
+-}
+-- getModuleInfoBw fp base_dir modul options = return modul
+-- getModuleInfoBw fp base_dir modul options = return $ fp ++ base_dir ++ modul ++ (show options)
+getModuleInfoBw _fp _base_dir _modul _options = do
+  -- GMU.liftIO $ putStrLn "getModuleInfoBw"
+  return ("foobar"::String)
 
 -- ---------------------------------------------------------------------
 
@@ -153,8 +199,8 @@ getFiles = do
 
 -- ---------------------------------------------------------------------
 
-getAllPages :: IO [[OutlineDef]]
+getAllPages :: IO [(String, [OutlineDef])]
 getAllPages = do
   files <- getFiles
-  m1<-mapM getPage files
+  m1 <- mapM getPage files
   return m1

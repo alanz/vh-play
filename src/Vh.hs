@@ -111,17 +111,16 @@ loadOp  (g,_n,e) = do
   let xs = map (\(p,ol) -> mkNode (T.unpack  $ odName ol) p (outlineTypeToVhNode $ head $ odType ol)) $ zip (cycle posns) outlines
       ns = IntMap.fromList $ zip [1..] xs
   -}
-  let xs = outlinesToNodes outlines
+  let (name,xs) = outlinesToNodes outlines
       ns = IntMap.fromList $ zip [1..] xs
   return (g,ns,e)
 
-outlinesToNodes :: [OutlineDef] -> [Node VhNode]
-outlinesToNodes outlines =
+outlinesToNodes :: (String,[OutlineDef]) -> (String,[Node VhNode])
+outlinesToNodes (maybeName,outlines) =
   let
     xs = map (\(p,ol) -> mkNode (T.unpack  $ odName ol) p (outlineTypeToVhNode $ head $ odType ol)) $ zip (cycle posns) outlines
-    -- ns = IntMap.fromList $ zip [1..] xs
   in
-   xs
+   (maybeName,xs)
 
 loadProjectOp :: D.Document g VhNode e c -> IO (D.Document g VhNode e c)
 loadProjectOp doc = do
@@ -133,8 +132,8 @@ loadProjectOp doc = do
                                   -- ns
                                   d)
              doc
-             (zip [1..] nss)
-             -- nss
+             -- (zip [1..] nss)
+             nss
       -- TODO: fix prior line
   return doc'
 
