@@ -32,41 +32,30 @@ type CabalFile = FilePath
 type CabalPath = FilePath
 type TempFolder = FilePath
 
--- | all the different actions and their parameters
-data BWCmd=Synchronize {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], force::Bool}
-        | Synchronize1 {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], force::Bool, file:: FilePath}
-        | Write {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath, contents::String}
-        | Configure {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], verbosity::Verbosity,cabalTarget::WhichCabal}
-        | Build {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], verbosity::Verbosity,output::Bool,cabalTarget::WhichCabal}
-        | Build1 {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath}
-        | Outline {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath} -- In Use
-        | TokenTypes {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath}
-        | Occurrences {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath,token::String}
-        | ThingAtPointCmd {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath, line::Int, column::Int}
-        | NamesInScope {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath}
-        | Dependencies {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String]}
-        | Components {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String]}
-        | GetBuildFlags {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], file:: FilePath}
-        | GenerateUsage {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String], returnAll:: Bool, cabalComponent::String}
-
-        | GetFiles {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String] } -- In use
-        | ModuleInfo {tempFolder::TempFolder, cabalPath::CabalPath, cabalFile::CabalFile, cabalFlags::String, cabalOption::[String] } -- In use
-    deriving (Show,Read,Data,Typeable)
-
-
+{-
 runCmd :: (ToJSON a) => BWCmd -> StateT BuildWrapperState IO a -> IO ()
 runCmd = runCmdV Normal
-
+-}
+{-
 runCmdV:: (ToJSON a) => Verbosity -> BWCmd -> StateT BuildWrapperState IO a -> IO ()
 runCmdV vb cmd f =
   evalStateT f (BuildWrapperState (tempFolder cmd) (cabalPath cmd) (cabalFile cmd) vb (cabalFlags cmd) (cabalOption cmd))
   >>= BSC.putStrLn . BS.append "build-wrapper-json:" . encode
+-}
 
-runCmdVt
-  :: Monad m =>
-     Verbosity -> BWCmd -> StateT BuildWrapperState m a -> m a
-runCmdVt vb cmd f =
-  evalStateT f (BuildWrapperState (tempFolder cmd) (cabalPath cmd) (cabalFile cmd) vb (cabalFlags cmd) (cabalOption cmd))
+runCmdVt :: Monad m => StateT BuildWrapperState m a -> m a
+runCmdVt f = evalStateT f bwState
+
+bwState  = BuildWrapperState
+  {- tempFolder  = -} ctempFolder
+  {- , cabalPath   = -} ccabalPath
+  {- , cabalFile   = -} ccabalFile
+  {- , verbosity   = -} Normal
+  {- , cabalFlags  = -} ccabalFlags
+  {- , cabalOpts   = -} ccabalOption
+
+
+
 
 
 ctempFolder :: TempFolder
@@ -85,45 +74,12 @@ ccabalOption :: [String]
 ccabalOption = []
 
 sync :: IO ()
-sync = runCmd syncCmd f
-  where
-    syncCmd = Synchronize
-                          { tempFolder  = ctempFolder
-                          , cabalPath   = ccabalPath
-                          , cabalFile   = ccabalFile
-                          , cabalFlags  = ccabalFlags
-                          , cabalOption = ccabalOption
-                          , force = True
-                          }
-    f = (synchronize True)
+sync = runCmdVt (synchronize True)
+  >>= BSC.putStrLn . BS.append "build-wrapper-json:" . encode
 
-{-
-outline :: FilePath -> IO ()
-outline filePath = runCmd outlineCmd f
-  where
-    outlineCmd = Outline
-                          { tempFolder  = ctempFolder
-                          , cabalPath   = ccabalPath
-                          , cabalFile   = ccabalFile
-                          , cabalFlags  = ccabalFlags
-                          , cabalOption = ccabalOption
-                          , file = filePath
-                          }
-    f = (getOutline filePath)
--}
 
 outline' :: FilePath -> IO (OpResult OutlineResult)
-outline' filePath = runCmdVt Normal outlineCmd f
-  where
-    outlineCmd = Outline
-                          { tempFolder  = ctempFolder
-                          , cabalPath   = ccabalPath
-                          , cabalFile   = ccabalFile
-                          , cabalFlags  = ccabalFlags
-                          , cabalOption = ccabalOption
-                          , file = filePath
-                          }
-    f = (getOutline filePath)
+outline' filePath = runCmdVt (getOutline filePath)
 
 
 getPage :: FilePath -> IO (String, [OutlineDef])
@@ -138,16 +94,7 @@ getPage filePath = do
 -- getModuleInfo' :: FilePath -> IO (String)
 getModuleInfo' filePath = do
   let
-    moduleInfoCmd = ModuleInfo
-                          { tempFolder  = ctempFolder
-                          , cabalPath   = ccabalPath
-                          , cabalFile   = ccabalFile
-                          , cabalFlags  = ccabalFlags
-                          , cabalOption = ccabalOption
-                          }
-    f = (getModuleInfo filePath)
-    -- f = (getOutline filePath)
-  (info,notes) <- runCmdVt Normal moduleInfoCmd f
+  (info,notes) <- runCmdVt (getModuleInfo filePath)
   return info
 
 -- | BuildWrapper function to getModuleInfo
@@ -185,16 +132,7 @@ getFilesBw = do
 
 getFiles :: IO [FilePath]
 getFiles = do
-  let
-    getFilesCmd = GetFiles
-                          { tempFolder  = ctempFolder
-                          , cabalPath   = ccabalPath
-                          , cabalFile   = ccabalFile
-                          , cabalFlags  = ccabalFlags
-                          , cabalOption = ccabalOption
-                          }
-    f = (getFilesBw)
-  (files,_notes) <- runCmdVt Normal getFilesCmd f
+  (files,_notes) <- runCmdVt (getFilesBw)
   return files
 
 -- ---------------------------------------------------------------------
@@ -204,3 +142,5 @@ getAllPages = do
   files <- getFiles
   m1 <- mapM getPage files
   return m1
+
+-- EOF
