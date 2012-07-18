@@ -111,30 +111,26 @@ loadOp  (g,_n,e) = do
   let xs = map (\(p,ol) -> mkNode (T.unpack  $ odName ol) p (outlineTypeToVhNode $ head $ odType ol)) $ zip (cycle posns) outlines
       ns = IntMap.fromList $ zip [1..] xs
   -}
-  let (name,xs) = outlinesToNodes outlines
+  let (_name,xs) = outlinesToNodes outlines
       ns = IntMap.fromList $ zip [1..] xs
   return (g,ns,e)
 
 outlinesToNodes :: (String,[OutlineDef]) -> (String,[Node VhNode])
-outlinesToNodes (maybeName,outlines) =
+outlinesToNodes (moduleName,outlines) =
   let
     xs = map (\(p,ol) -> mkNode (T.unpack  $ odName ol) p (outlineTypeToVhNode $ head $ odType ol)) $ zip (cycle posns) outlines
   in
-   (maybeName,xs)
+   (moduleName,xs)
 
 loadProjectOp :: D.Document g VhNode e c -> IO (D.Document g VhNode e c)
 loadProjectOp doc = do
   allOutlines <- getAllPages
   let nss = map outlinesToNodes allOutlines
-      -- doc' = D.setNetworkAssocs [] doc
-      doc' = foldl' (\d (i,ns) -> D.setNetworkAndSel (D.toNetworkId ("p" ++ (show i)))
+      doc' = foldl' (\d (n,ns) -> D.setNetworkAndSel (D.toNetworkId n)
                                   (setNodeAssocs (zip [1..] ns) (D.getEmptyNetwork doc))
-                                  -- ns
                                   d)
              doc
-             -- (zip [1..] nss)
              nss
-      -- TODO: fix prior line
   return doc'
 
 outlineTypeToVhNode :: OutlineDefType -> VhNode

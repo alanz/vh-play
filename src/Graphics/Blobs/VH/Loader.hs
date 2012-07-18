@@ -95,12 +95,12 @@ getPage filePath = do
 
 getModuleName :: FilePath -> IO (String)
 getModuleName filePath = do
-  (maybeParse,n) <- runCmdVt (BW.getAST filePath)
+  (maybeParse,_notes) <- runCmdVt (BW.getAST filePath)
   case maybeParse of
     (Just x) ->  do
-      let (Module l head pragmas imports decls,comments) = (fromParseResult x)
-      case head of
-        Just (ModuleHead l' (ModuleName _l name) maybeWarning maybeExports) ->  return name
+      let (Module _ll modulehead _pragmas _imports _decls,_comments) = (fromParseResult x)
+      case modulehead of
+        Just (ModuleHead _l' (ModuleName _l modulename) _maybeWarning _maybeExports) ->  return modulename
         Nothing -> return ("empty head:" ++ filePath)
       -- return x
     Nothing       -> return ("parse fail:" ++ filePath)
