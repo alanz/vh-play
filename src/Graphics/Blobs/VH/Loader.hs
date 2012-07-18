@@ -15,18 +15,20 @@ https://github.com/JPMoresmau/BuildWrapper/blob/master/src-exe/Language/Haskell/
 
 -}
 
+-- import Paths_buildwrapper
 -- import qualified MonadUtils as GMU
 import Control.Monad.State
 import Data.Aeson
 import Data.Version (showVersion)
-import Language.Haskell.BuildWrapper.API
 import Language.Haskell.BuildWrapper.Base hiding (tempFolder,cabalPath, cabalFile, cabalFlags,verbosity)
 import Language.Haskell.BuildWrapper.Cabal
 import Language.Haskell.BuildWrapper.GHC
--- import Paths_buildwrapper
+import Language.Haskell.Exts.Parser
 import System.Console.CmdArgs hiding (Verbosity(..),verbosity)
+import Language.Haskell.Exts.Annotated.Syntax
 import qualified Data.ByteString.Lazy as BS
 import qualified Data.ByteString.Lazy.Char8 as BSC
+import qualified Language.Haskell.BuildWrapper.API as BW
 
 type CabalFile = FilePath
 type CabalPath = FilePath
@@ -74,19 +76,34 @@ ccabalOption :: [String]
 ccabalOption = []
 
 sync :: IO ()
-sync = runCmdVt (synchronize True)
+sync = runCmdVt (BW.synchronize True)
   >>= BSC.putStrLn . BS.append "build-wrapper-json:" . encode
 
 
 outline' :: FilePath -> IO (OpResult OutlineResult)
-outline' filePath = runCmdVt (getOutline filePath)
+outline' filePath = runCmdVt (BW.getOutline filePath)
 
 
 getPage :: FilePath -> IO (String, [OutlineDef])
 getPage filePath = do
   (res, _notes) <- outline' filePath
-  modulename <- getModuleInfo' filePath
+  -- modulename <- getModuleInfo' filePath
+  modulename <- getModuleName filePath
   return (modulename, (orOutline res))
+
+-- ---------------------------------------------------------------------
+
+getModuleName :: FilePath -> IO (String)
+getModuleName filePath = do
+  (maybeParse,n) <- runCmdVt (BW.getAST filePath)
+  case maybeParse of
+    (Just x) ->  do
+      let (Module l head pragmas imports decls,comments) = (fromParseResult x)
+      case head of
+        Just (ModuleHead l' (ModuleName _l name) maybeWarning maybeExports) ->  return name
+        Nothing -> return ("empty head:" ++ filePath)
+      -- return x
+    Nothing       -> return ("parse fail:" ++ filePath)
 
 -- ---------------------------------------------------------------------
 
@@ -100,7 +117,7 @@ getModuleInfo' filePath = do
 -- | BuildWrapper function to getModuleInfo
 getModuleInfo :: FilePath -> BuildWrapper(OpResult (String))
 getModuleInfo filePath = do
-  mi <- withGHCAST filePath getModuleInfoBw
+  mi <- BW.withGHCAST filePath getModuleInfoBw
   return $ case mi of
     (Just m,ns)->(m,ns)
     (Nothing,ns)-> ("aaNothing",ns)
