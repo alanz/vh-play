@@ -18,3 +18,13 @@ Question: How to store the relationship between pages?
 Related: Is this a Blobs feature, or specific to this implementation
    (DFD & VH)
 
+
+Two views
+
+-  Import view, of module topography
+
+-  Usage view: what actually uses what. i.e. at the function defn etc
+   level
+
+
+
